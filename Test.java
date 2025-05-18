@@ -1,8 +1,9 @@
 class Test {
 
     public static void main(String[] args) {
-        GenerateParentheses generateParentheses = new GenerateParentheses();
-        System.out.println(generateParentheses.generateParenthesis(2));
+        ContainerWithMostWater containerWithMostWater = new ContainerWithMostWater();
+
+        System.out.println(containerWithMostWater.maxArea(new int[]{1,7,2,5,4,7,3,6}));
     }
 
 }
