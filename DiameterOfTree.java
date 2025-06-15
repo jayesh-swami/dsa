@@ -1,13 +1,13 @@
 public class DiameterOfTree {
     private int diameter = 0;
 
-    public int diameterOfBinaryTree(InvertBinaryTree.TreeNode root) {
+    public int diameterOfBinaryTree(TreeNode root) {
         treeHeightAndDiameterUpdate(root);
 
         return this.diameter;
     }
 
-    private int treeHeightAndDiameterUpdate(InvertBinaryTree.TreeNode root) {
+    private int treeHeightAndDiameterUpdate(TreeNode root) {
         if(root == null) return 0;
 
         int leftHeight = treeHeightAndDiameterUpdate(root.left);
