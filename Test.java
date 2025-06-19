@@ -1,9 +1,10 @@
 class Test {
 
     public static void main(String[] args) {
-        ContainerWithMostWater containerWithMostWater = new ContainerWithMostWater();
+        CpuTaskScheduler cpuTaskScheduler = new CpuTaskScheduler();
 
-        System.out.println(containerWithMostWater.maxArea(new int[]{1,7,2,5,4,7,3,6}));
+        System.out.println(cpuTaskScheduler.leastInterval(new char[] {'A','A','A','A','A','A','B','C','D','E','F','G'},1));
+
     }
 
 }
