@@ -31,6 +31,23 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 ## Two pointers on an array (in-place)
 - A "write" pointer trails a "read" pointer; copy only what you want to keep. Gives O(1) extra space for filter/remove/dedupe-style problems.
 
+## Designing a hash table (collision resolution)
+- Core: `idx = hash(key) % TABLE_SIZE` into a fixed array of buckets. A **prime** table size spreads keys more evenly; pick it so the **load factor** (`elements / buckets`) stays low.
+- **Negative keys:** in C++ `%` keeps the sign of the dividend (`-3 % 7 == -3`), so normalise with `h < 0 ? h + TABLE_SIZE : h`.
+- **Separate chaining:** each bucket is a `list` of entries. Add/find/remove scan only that bucket. Simple, deletes are trivial (`list::erase`), and it degrades gracefully as the load factor grows.
+- **Open addressing (linear probing):** one flat array; on a collision, try `(h + i) % TABLE_SIZE` for `i = 0, 1, 2, …`.
+  - Each slot needs a status: `EMPTY`, `EXISTS`, `DELETED`.
+  - **Tombstones:** removal marks a slot `DELETED` instead of `EMPTY`. Otherwise a later lookup would stop at the hole and miss keys that probed past it.
+  - Lookup stops at `EMPTY` and skips over `DELETED`. Insert can reuse the first non-`EXISTS` slot, but only after confirming the key isn't already present.
+  - Downsides: clustering, and the table fills up (it needs a capacity check or a resize). Quadratic probing (`h + i²`) reduces clustering.
+- Other strategies (cuckoo hashing, etc.) are listed in [FURTHER_READINGS.md](../FURTHER_READINGS.md).
+
+## Kadane's Algorithm (maximum subarray sum)
+- Track `sumEndingAtK`, the best sum of a subarray that **ends at** index `k`: `sumEndingAtK = max(nums[k], sumEndingAtK + nums[k])`. Either extend the previous subarray or start fresh at `k`.
+- The answer is the max of `sumEndingAtK` over all `k`. O(n) time, O(1) space, vs O(n²) for checking every subarray.
+- Initialise with the first element, or with `INT_MIN / 2`. Plain `INT_MIN` overflows on `sumEndingAtK + nums[k]` when `nums[k]` is negative.
+- With all-negative input, the answer is the largest single element (empty subarrays not allowed).
+
 ## Memory ownership in C++
 - Returning `vector` → RAII, no manual cleanup.
 - Output buffer parameter → caller owns memory.
@@ -51,6 +68,9 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 | 6 | Group Anagrams | [group_anagrams.cpp](group_anagrams.cpp) | Sorted string as hash key + `std::move` | O(n·k log k) | O(n·k) |
 | 7 | Remove Element | [remove_element.cpp](remove_element.cpp) | Two pointers (in-place overwrite) | O(n) | O(1) |
 | 8 | Majority Element | [majority_element.cpp](majority_element.cpp) | Hash map count **and** Boyer-Moore voting | O(n) | O(n) / **O(1)** |
+| 9 | Design HashSet | [design_hashset.cpp](design_hashset.cpp) | Separate chaining **and** linear probing with tombstones | O(1) avg | O(TABLE_SIZE + n) |
+| 10 | Design HashMap | [design_hashmap.cpp](design_hashmap.cpp) | Separate chaining with `list<pair<key, value>>` | O(1) avg | O(TABLE_SIZE + n) |
+| 11 | Maximum Subarray Sum | [max_subarray_sum.cpp](max_subarray_sum.cpp) | Brute force over all start points **and** Kadane's | O(n²) / **O(n)** | O(1) |
 
 `k` = alphabet size or string length, `m` = length of shortest string.
 
@@ -91,3 +111,18 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 ### 8. Majority Element
 - **Hashing:** count occurrences; return as soon as a count exceeds `n / 2`. O(n) space. Returns `INT_MAX` as a sentinel if no majority.
 - **Boyer-Moore Voting:** O(n) time, O(1) space (see [Boyer-Moore Voting Algorithm](#boyer-moore-voting-algorithm)).
+
+### 9. Design HashSet
+- **Chaining (`MyHashSet`):** `vector<list<int>>` of size 19997 (prime). `add` scans the bucket to avoid duplicates; `remove` erases via iterator. It doesn't normalise negative keys, which is fine for LeetCode's `0 ≤ key ≤ 10⁶`.
+- **Linear probing (`MyHashSetLinearProbing`):** parallel `hash` / `hashStatus` arrays and a shared `find()` helper. `remove` leaves a `DELETED` tombstone. `add` reuses the first non-`EXISTS` slot after `find` confirms the key is absent. `currentSize` guards against a full table.
+- See [Designing a hash table](#designing-a-hash-table-collision-resolution).
+
+### 10. Design HashMap
+- Same chaining design as the HashSet, but buckets store `pair<int, int>`. `add` on an existing key **updates** the value in place (iterate with `auto&` so the update sticks).
+- `get` on a missing key returns `INT_MAX` as a sentinel (LeetCode's version expects `-1`).
+- Negative keys are normalised in `hash()`.
+
+### 11. Maximum Subarray Sum
+- **Naive:** for each start `i`, extend `j` and keep a running sum. O(n²), no O(n³) inner re-summing.
+- **Kadane's:** extend or restart at each element, and track the best so far (see [Kadane's Algorithm](#kadanes-algorithm-maximum-subarray-sum)).
+- Edge cases tested: zeros, the whole array as the answer, crossing a negative, all negatives.
