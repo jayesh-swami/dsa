@@ -73,6 +73,22 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
   | Quick sort (Lomuto, random pivot) | ~0.0025 s | **~0.25 s** (O(n²) on duplicates) |
   | `std::sort` | ~0.0018 s | — |
 
+## Counting sort and bucket sort by frequency
+- **Counting sort:** when there are only a few distinct values, count each one and then overwrite the array value by value. O(n + k) for `k` distinct values in a known small range, with no comparisons.
+- **Unknown or sparse values:** count with an `unordered_map`, copy the `(value, count)` pairs into a vector and sort only those. O(n + k log k), so it's close to O(n) while `k ≪ n`. As `k → n` it is just a slower comparison sort (hashing every element, then sorting n pairs).
+- **Dutch national flag (3 values):** one pass and O(1) space with three pointers `low`, `mid` and `high`. `0` → swap to `low++` and `mid++`; `1` → `mid++`; `2` → swap to `high--` and **don't** advance `mid`, because the swapped-in value hasn't been checked yet. It's the same 3-way partition that fixes quick sort on duplicates.
+- **Bucket sort by frequency:** a frequency is always in `[1, n]`, so `bucket[f]` can hold the values seen `f` times. Walking from `f = n` down gives the most frequent values first, in O(n) and with no sorting.
+
+## Top-k patterns
+| Approach | Time | Notes |
+|----------|------|-------|
+| Count, then sort all `(count, value)` pairs | O(n + u log u) | Simplest. `u` = number of unique values |
+| Min-heap of size `k` | O(n log k) | `priority_queue` with `greater<>`; pop once the size goes above `k` |
+| `nth_element` / `partial_sort` | O(n + u) avg / O(n + u log k) | Only the top `k` needs to be in order, not everything |
+| Bucket sort by frequency | **O(n)** | Counts are bounded by `n` |
+
+- `sort(v.rbegin(), v.rend())` sorts in **descending** order. Pairs compare by `.first` first, so store them as `(count, value)`.
+
 ## Memory ownership in C++
 - Returning `vector` → RAII, no manual cleanup.
 - Output buffer parameter → caller owns memory.
@@ -97,8 +113,10 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 | 10 | Design HashMap | [design_hashmap.cpp](design_hashmap.cpp) | Separate chaining with `list<pair<key, value>>` | O(1) avg | O(TABLE_SIZE + n) |
 | 11 | Maximum Subarray Sum | [max_subarray_sum.cpp](max_subarray_sum.cpp) | Brute force over all start points **and** Kadane's | O(n²) / **O(n)** | O(1) |
 | 12 | Sorting Algorithms | [sorting_algos.cpp](sorting_algos.cpp) | Bubble, merge, and quick sort (random pivot) benchmarked against `std::sort` | O(n²) / O(n log n) | O(1) / O(n) / O(log n) |
+| 13 | Sort Colors | [sort_colors.cpp](sort_colors.cpp) | Counting sort for 3 values **and** a hash map plus sorting the distinct values for any `k` | O(n) / O(n + k log k) | O(1) / O(k) |
+| 14 | Top K Frequent Elements | [top_k_frequent_elements.cpp](top_k_frequent_elements.cpp) | Hash map count, then sort pairs **and** bucket sort by frequency | O(n + u log u) / **O(n)** | O(n) |
 
-`k` = alphabet size or string length, `m` = length of shortest string.
+`k` = alphabet size or string length (#13: number of distinct values), `m` = length of shortest string, `u` = number of unique values.
 
 ### 1. Concatenation of Array
 - Build `ans` of size `2n` with `ans[i] = nums[i % n]`. One loop, no need to copy twice.
@@ -159,3 +177,22 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - **`quickSort(nums, start, end)`:** closed range, so call it as `quickSort(a, 0, a.size() - 1)`. `partitionQuickSort` picks a random pivot with `randomBetween` (inclusive `[start, end]`, which is correct for the closed range) and then does a Lomuto partition.
 - `main` sorts a small hand-written array, then reads `n` numbers from stdin and times the sort. It prints `sort failure!` if any adjacent pair is out of order.
 - See [Sorting algorithms](#sorting-algorithms) for complexities, trade-offs, and timings.
+
+### 13. Sort Colors
+- **`sortColors`:** counting sort hardcoded for `0`, `1`, `2`. One pass counts them, then three `while` loops overwrite the array. It takes two passes, so the Dutch national flag version is the one-pass follow-up (see [Counting sort and bucket sort by frequency](#counting-sort-and-bucket-sort-by-frequency)).
+- **`sortColorsN`:** a generalisation for any values. Count with `unordered_map`, sort the `(value, count)` pairs, then write each value out `count` times. O(n + k log k).
+- `tests/gen_sort_colors.cpp` writes inputs with `n = 10⁶` and `k = 10, 10², …, 10⁶` distinct values (each value appears at least once, fixed seed). `main` times `sortColorsN`, counts the distinct values and checks `std::is_sorted`.
+- Measured with `-O2`, `n = 10⁶`:
+
+  | k | 10 | 10² | 10³ | 10⁴ | 10⁵ | 10⁶ |
+  |---|---|---|---|---|---|---|
+  | `sortColorsN` | ~0.005 s | ~0.006 s | ~0.007 s | ~0.009 s | ~0.020 s | ~0.25 s |
+
+  Time stays almost flat while `k ≪ n`. At `k = n` it jumps about 12×, because the map gets a million entries (cache misses, rehashing) and the `k log k` sort becomes a full sort.
+
+### 14. Top K Frequent Elements
+- **`topKFrequent`:** count into `unordered_map`, flip the entries to `(count, value)` pairs, sort them descending with `rbegin()`/`rend()`, and take the first `k`.
+- **`topKFrequentBucket`:** `bucket` has `n + 1` slots indexed by count. Walk from `f = n` down and stop once `k` values are collected. O(n) time and space.
+- The answer order doesn't matter, so the test harness sorts both vectors before comparing them. Both versions run through the same tests using a function-pointer type alias (`using Fn = vector<int> (*)(vector<int>&, int)`).
+- Edge cases tested: a single element, negatives, `k` equal to the number of unique values, and all-distinct frequencies.
+- See [Top-k patterns](#top-k-patterns) for the heap and `nth_element` alternatives.
