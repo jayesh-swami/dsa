@@ -40,13 +40,38 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
   - **Tombstones:** removal marks a slot `DELETED` instead of `EMPTY`. Otherwise a later lookup would stop at the hole and miss keys that probed past it.
   - Lookup stops at `EMPTY` and skips over `DELETED`. Insert can reuse the first non-`EXISTS` slot, but only after confirming the key isn't already present.
   - Downsides: clustering, and the table fills up (it needs a capacity check or a resize). Quadratic probing (`h + i²`) reduces clustering.
-- Other strategies (cuckoo hashing, etc.) are listed in [FURTHER_READINGS.md](../FURTHER_READINGS.md).
+- Other strategies (cuckoo hashing, etc.) are listed in the further readings notes.
 
 ## Kadane's Algorithm (maximum subarray sum)
 - Track `sumEndingAtK`, the best sum of a subarray that **ends at** index `k`: `sumEndingAtK = max(nums[k], sumEndingAtK + nums[k])`. Either extend the previous subarray or start fresh at `k`.
 - The answer is the max of `sumEndingAtK` over all `k`. O(n) time, O(1) space, vs O(n²) for checking every subarray.
 - Initialise with the first element, or with `INT_MIN / 2`. Plain `INT_MIN` overflows on `sumEndingAtK + nums[k]` when `nums[k]` is negative.
 - With all-negative input, the answer is the largest single element (empty subarrays not allowed).
+
+## Sorting algorithms
+| Algorithm | Best | Average | Worst | Extra space | Stable |
+|-----------|------|---------|-------|-------------|--------|
+| Bubble sort (with early exit) | O(n) | O(n²) | O(n²) | O(1) | Yes |
+| Merge sort | O(n log n) | O(n log n) | O(n log n) | O(n) | Yes |
+| Quick sort (random pivot) | O(n log n) | O(n log n) | O(n²) | O(log n) stack | No |
+| `std::sort` (introsort) | O(n log n) | O(n log n) | O(n log n) | O(log n) | No (`std::stable_sort` is) |
+
+- **Bubble sort:** swap adjacent out-of-order pairs. After pass `i`, the largest `i + 1` elements are in their final place, so the inner loop can stop at `n - 1 - i`. If a pass makes no swaps, the array is sorted → return early (this is what gives the O(n) best case).
+- **Merge sort:** split at `mid`, sort both halves recursively, then **merge** two sorted halves with two pointers into a temp buffer and copy it back. Taking from the left half on ties (`<=`) keeps it **stable**. Its runtime doesn't depend on the input order.
+- **Quick sort:** pick a pivot and **partition** so that smaller elements go left and the rest go right. The pivot is then at its final index, so recurse on each side.
+  - **Lomuto partition:** move the pivot to `end`, keep `i` as the boundary of the "< pivot" region, scan `j` and swap smaller elements to `i++`, then swap the pivot into `i`.
+  - A **random pivot** avoids the O(n²) worst case on already sorted input. It does **not** help with many duplicates. With a strict `<`, equal elements all land on one side, so an all-equal array is still O(n²). The fix is a 3-way (Dutch national flag) partition or Hoare partition.
+- **Bounds conventions:** decide whether `end` is inclusive or exclusive and stick to it. Here merge sort uses half-open `[start, end)` and quick sort uses closed `[start, end]`.
+- **`std::uniform_int_distribution<int>(a, b)`** is **inclusive** on both ends, `[a, b]`. Use a fixed-seed `std::mt19937` so runs are reproducible.
+- **Benchmarking:** time with `std::chrono::steady_clock` (monotonic) and check the result with `std::is_sorted`. Use `ios::sync_with_stdio(false); cin.tie(nullptr);` to read big inputs quickly.
+- Measured on 50,000 random ints (`-O2`):
+
+  | | Random input | 50,000 equal values |
+  |---|---|---|
+  | Bubble sort | ~0.81 s | — |
+  | Merge sort | ~0.004 s | ~0.0015 s |
+  | Quick sort (Lomuto, random pivot) | ~0.0025 s | **~0.25 s** (O(n²) on duplicates) |
+  | `std::sort` | ~0.0018 s | — |
 
 ## Memory ownership in C++
 - Returning `vector` → RAII, no manual cleanup.
@@ -71,6 +96,7 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 | 9 | Design HashSet | [design_hashset.cpp](design_hashset.cpp) | Separate chaining **and** linear probing with tombstones | O(1) avg | O(TABLE_SIZE + n) |
 | 10 | Design HashMap | [design_hashmap.cpp](design_hashmap.cpp) | Separate chaining with `list<pair<key, value>>` | O(1) avg | O(TABLE_SIZE + n) |
 | 11 | Maximum Subarray Sum | [max_subarray_sum.cpp](max_subarray_sum.cpp) | Brute force over all start points **and** Kadane's | O(n²) / **O(n)** | O(1) |
+| 12 | Sorting Algorithms | [sorting_algos.cpp](sorting_algos.cpp) | Bubble, merge, and quick sort (random pivot) benchmarked against `std::sort` | O(n²) / O(n log n) | O(1) / O(n) / O(log n) |
 
 `k` = alphabet size or string length, `m` = length of shortest string.
 
@@ -126,3 +152,10 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - **Naive:** for each start `i`, extend `j` and keep a running sum. O(n²), no O(n³) inner re-summing.
 - **Kadane's:** extend or restart at each element, and track the best so far (see [Kadane's Algorithm](#kadanes-algorithm-maximum-subarray-sum)).
 - Edge cases tested: zeros, the whole array as the answer, crossing a negative, all negatives.
+
+### 12. Sorting Algorithms
+- **`bubbleSort`:** a `swaps` counter per pass gives the early exit. The inner loop always goes to `n - 1` (it could stop at `n - 1 - i`).
+- **`mergeSort(nums, start, end)`:** half-open range, so call it as `mergeSort(a, 0, a.size())`. The merge builds a `merged` vector and copies it back into `nums[start..end)`.
+- **`quickSort(nums, start, end)`:** closed range, so call it as `quickSort(a, 0, a.size() - 1)`. `partitionQuickSort` picks a random pivot with `randomBetween` (inclusive `[start, end]`, which is correct for the closed range) and then does a Lomuto partition.
+- `main` sorts a small hand-written array, then reads `n` numbers from stdin and times the sort. It prints `sort failure!` if any adjacent pair is out of order.
+- See [Sorting algorithms](#sorting-algorithms) for complexities, trade-offs, and timings.
