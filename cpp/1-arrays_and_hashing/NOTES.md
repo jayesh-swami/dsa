@@ -14,6 +14,17 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - The trick is usually choosing a **canonical key** (sorted string, char counts, complement `target - x`).
 - `map[key]++` works because `operator[]` default-inserts `0` for a missing key. Note that `operator[]` **inserts** — use `contains`/`find` when you only want to check.
 - `contains()` is C++20; older code uses `find(x) != end()` or `count(x)`.
+- `set.insert(x)` returns `pair<iterator, bool>`. `.second` is `false` when `x` was already there, so `if (!s.insert(x).second)` checks for a duplicate and inserts in one lookup.
+
+## Sequence starts (longest consecutive run)
+- Put everything in a hash set. A number `x` **starts** a run only if `x - 1` is not in the set. Count upwards only from those starts.
+- Every number is visited by at most one run, so the total work is O(n). Counting from every element instead is O(n²) on input like `1..n`.
+- Iterate over the **set**, not the input, so duplicates don't start the same run again.
+
+## Grid boxes (Sudoku indexing)
+- For a `k × k` box grid (`k = 3` for 9×9, `k = √N` in general), box `b` and cell `j` within it map to `row = (b / k) * k + j / k`, `col = (b % k) * k + j % k`.
+- With that, one loop `i = 0..N-1` can check row `i`, column `i` and box `i` together, reusing one set and calling `clear()` between them.
+- Alternative: one pass over the board with `N` sets per rows, columns and boxes, where cell `(r, c)` belongs to box `(r / k) * k + c / k`.
 
 ## Boyer-Moore Voting Algorithm
 - Keep a `candidate` and a `count`. Same element as candidate → `count++`; different → `count--`. When `count` hits 0, the current element becomes the new candidate.
@@ -89,6 +100,23 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 
 - `sort(v.rbegin(), v.rend())` sorts in **descending** order. Pairs compare by `.first` first, so store them as `(count, value)`.
 
+## Length-prefix encoding (serialising a list of strings)
+- Write each string as `len#str`. The decoder reads digits up to `#`, then takes exactly `len` characters. Because it never looks for a delimiter inside the payload, the strings can contain `#`, digits or anything else.
+- A plain delimiter (e.g. joining with `,`) breaks as soon as a string contains that delimiter, unless you add escaping.
+- Empty strings encode as `0#`, and an empty list encodes as `""`, so both round-trip.
+- O(total length) for both directions.
+
+## 2D prefix sums (summed-area table)
+- `P[i][j]` = sum of the rectangle from `(0, 0)` to `(i, j)`. Build it in one pass by inclusion-exclusion: `P[i][j] = P[i-1][j] + P[i][j-1] - P[i-1][j-1] + a[i][j]` (the top-left block is counted twice, so subtract it once).
+- Any rectangle `(r1, c1)`–`(r2, c2)` is then `P[r2][c2] - P[r1-1][c2] - P[r2][c1-1] + P[r1-1][c1-1]`. O(n·m) to build, **O(1)** per query.
+- **Padding:** make `P` size `(n+1) × (m+1)` with a zero first row and column, and shift indices by one. That removes every `< 0` bounds check.
+- The 1D version is the same idea: `sum(l..r) = P[r+1] - P[l]`.
+
+## Prefix and suffix products (everything except `i`)
+- "Combine everything except index `i`" = (combine of everything **left** of `i`) ⊕ (combine of everything **right** of `i`). Build a left-to-right prefix array and a right-to-left suffix array, both starting at the identity (`1` for products), each shifted by one so index `i` excludes itself.
+- **Why not divide?** `total / nums[i]` breaks on zeros (one zero → only that index is non-zero; two or more → all zeros) and the problem forbids division anyway. Prefix/suffix handles zeros with no special cases.
+- **O(1) extra space:** write the prefix products straight into the output array, then sweep right to left with a single running suffix variable and multiply it in. The output array doesn't count as extra space.
+
 ## Memory ownership in C++
 - Returning `vector` → RAII, no manual cleanup.
 - Output buffer parameter → caller owns memory.
@@ -115,8 +143,13 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 | 12 | Sorting Algorithms | [sorting_algos.cpp](sorting_algos.cpp) | Bubble, merge, and quick sort (random pivot) benchmarked against `std::sort` | O(n²) / O(n log n) | O(1) / O(n) / O(log n) |
 | 13 | Sort Colors | [sort_colors.cpp](sort_colors.cpp) | Counting sort for 3 values **and** a hash map plus sorting the distinct values for any `k` | O(n) / O(n + k log k) | O(1) / O(k) |
 | 14 | Top K Frequent Elements | [top_k_frequent_elements.cpp](top_k_frequent_elements.cpp) | Hash map count, then sort pairs **and** bucket sort by frequency | O(n + u log u) / **O(n)** | O(n) |
+| 15 | Encode and Decode Strings | [encode_decode_string.cpp](encode_decode_string.cpp) | Length prefix `len#str` | O(L) | O(L) |
+| 16 | Range Sum Query 2D – Immutable | [range_sum_2d_query.cpp](range_sum_2d_query.cpp) | 2D prefix sums, with a bounds-checked helper **and** a zero-padded matrix | O(n·m) build, O(1) query | O(n·m) |
+| 17 | Product of Array Except Self | [product_of_array_except_self.cpp](product_of_array_except_self.cpp) | Prefix and suffix product arrays **and** output array plus a running suffix | O(n) | O(n) / **O(1)** extra |
+| 18 | Valid Sudoku | [valid_sudoku.cpp](valid_sudoku.cpp) | Hash set per row/column/box with box index math, for 9×9 **and** any N×N | O(N²) | O(N) |
+| 19 | Longest Consecutive Sequence | [longest_consecutive_seq.cpp](longest_consecutive_seq.cpp) | Hash set, count only from run starts (`n - 1` absent) | O(n) | O(n) |
 
-`k` = alphabet size or string length (#13: number of distinct values), `m` = length of shortest string, `u` = number of unique values.
+`k` = alphabet size or string length (#13: number of distinct values), `m` = length of shortest string (#16: number of columns), `u` = number of unique values, `L` = total length of all strings, `N` = side length of the Sudoku board.
 
 ### 1. Concatenation of Array
 - Build `ans` of size `2n` with `ans[i] = nums[i % n]`. One loop, no need to copy twice.
@@ -196,3 +229,39 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - The answer order doesn't matter, so the test harness sorts both vectors before comparing them. Both versions run through the same tests using a function-pointer type alias (`using Fn = vector<int> (*)(vector<int>&, int)`).
 - Edge cases tested: a single element, negatives, `k` equal to the number of unique values, and all-distinct frequencies.
 - See [Top-k patterns](#top-k-patterns) for the heap and `nth_element` alternatives.
+
+### 15. Encode and Decode Strings
+- **`encode`:** append `to_string(s.size()) + '#' + s` for every string.
+- **`decode`:** read characters up to `#` into `strLen`, `stoi` it, skip the `#`, then copy the next `len` characters. Repeat until the end of the input.
+- Possible improvements: take the input as `const string&` instead of by value, and use `str.substr(i, len)` (or `find('#', i)`) instead of building strings one character at a time.
+- See [Length-prefix encoding](#length-prefix-encoding-serialising-a-list-of-strings).
+
+### 16. Range Sum Query 2D – Immutable
+- **`NumMatrix`:** an `n × m` prefix matrix. `sumFromTopLeft(r, c)` returns `0` when `r < 0` or `c < 0`, so the build and `sumRegion` can use the formulas directly.
+- **`NumMatrixOptimized`:** an `(n+1) × (m+1)` padded matrix, so there are no branches. `sumMatrix[i+1][j+1]` holds the sum up to `(i, j)`.
+- Both constructors read `matrix[0]`, so an empty matrix would be out of bounds (LeetCode guarantees `n, m ≥ 1`).
+- `main` checks both classes on the LeetCode example (expected `8 11 12`).
+- See [2D prefix sums](#2d-prefix-sums-summed-area-table).
+
+### 17. Product of Array Except Self
+- **`productExceptSelf`:** `left[i]` = product of `nums[0..i-1]`, `right[i]` = product of `nums[i+1..n-1]` (both start at `1`), and `res[i] = left[i] * right[i]`. Three passes, O(n) extra space.
+- **`productExceptSelfMemoryOptimized`:** fill `res` with the left products, then walk right to left keeping `productUntilNow` (the suffix product) and multiply it into `res[i]`. O(1) extra space.
+- Both take `vector<int>&`, so the tests can't pass a brace list directly. A `checkBoth` helper takes the input by value and runs the same case through both versions.
+- Edge cases tested: two elements, one zero, several zeros, a zero at either end, all negatives, all ones.
+- `int` can overflow for large products. LeetCode guarantees every prefix/suffix product fits in 32 bits.
+- See [Prefix and suffix products](#prefix-and-suffix-products-everything-except-i).
+
+### 18. Valid Sudoku
+- **`isSudokuValid`:** for each `i`, check row `i`, column `i` and box `i` with one `unordered_set<char>` that is cleared between them. Skip `'.'`, and return `false` as soon as `insert(...).second` is `false`.
+- **`isSudokuValidN`:** the same loop for any `N × N` board, with `-1` for empty cells. `k = sqrt(N)`, and the board is rejected if `k * k != N`.
+- It only checks that the filled cells don't repeat. It doesn't check that the board is solvable or that the values are in range.
+- Edge cases tested: empty and fully solved boards, a duplicate in only a row, only a column or only a box, the bottom-right box, 4×4 and 1×1 boards, a 3×3 board (not a perfect square), and 9×9 through the NxN version.
+- Possible improvement: a `bool seen[9]` (or a bitmask) instead of `unordered_set`, since the values are small.
+- See [Grid boxes](#grid-boxes-sudoku-indexing).
+
+### 19. Longest Consecutive Sequence
+- **`longestConsecutive`:** insert everything into an `unordered_set`, collect the numbers whose `n - 1` is missing, then count up from each with `while (s.contains(i)) i++`. The run length is `i - n`.
+- The `candidates` vector could be dropped by counting straight inside the set loop.
+- Edge cases tested: empty, single, duplicates, all the same, negatives, crossing zero, no consecutive numbers, two equal runs, values near `±10⁹`.
+- `i++` past `INT_MAX` would overflow if the input contained `INT_MAX`. LeetCode's range (`|x| ≤ 10⁹`) avoids this.
+- See [Sequence starts](#sequence-starts-longest-consecutive-run).
