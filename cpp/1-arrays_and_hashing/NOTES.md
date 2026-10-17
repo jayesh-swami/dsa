@@ -45,6 +45,7 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 
 ## Two pointers on an array (in-place)
 - A "write" pointer trails a "read" pointer; copy only what you want to keep. Gives O(1) extra space for filter/remove/dedupe-style problems.
+- **Sorted input → dedupe without a set:** duplicates are adjacent, so compare `nums[r]` with the last kept value `nums[w - 1]`. O(1) space, no hashing. When a problem says "sorted", ask what that lets you drop.
 
 ## Designing a hash table (collision resolution)
 - Core: `idx = hash(key) % TABLE_SIZE` into a fixed array of buckets. A **prime** table size spreads keys more evenly; pick it so the **load factor** (`elements / buckets`) stays low.
@@ -61,17 +62,22 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - Track `sumEndingAtK`, the best sum of a subarray that **ends at** index `k`: `sumEndingAtK = max(nums[k], sumEndingAtK + nums[k])`. Either extend the previous subarray or start fresh at `k`.
 - The answer is the max of `sumEndingAtK` over all `k`. O(n) time, O(1) space, vs O(n²) for checking every subarray.
 - Initialise with the first element, or with `INT_MIN / 2`. Plain `INT_MIN` overflows on `sumEndingAtK + nums[k]` when `nums[k]` is negative.
+  - If an **empty subarray is valid** (sum `0`), initialise both the running sum and the best to `0` instead. The answer can then never go below `0`, so all-negative input gives `0`.
 - With all-negative input, the answer is the largest single element (empty subarrays not allowed).
 
 ## Sorting algorithms
 | Algorithm | Best | Average | Worst | Extra space | Stable |
 |-----------|------|---------|-------|-------------|--------|
 | Bubble sort (with early exit) | O(n) | O(n²) | O(n²) | O(1) | Yes |
+| Selection sort | O(n²) | O(n²) | O(n²) | O(1) | No |
+| Insertion sort | O(n) | O(n²) | O(n²) | O(1) | Yes |
 | Merge sort | O(n log n) | O(n log n) | O(n log n) | O(n) | Yes |
 | Quick sort (random pivot) | O(n log n) | O(n log n) | O(n²) | O(log n) stack | No |
 | `std::sort` (introsort) | O(n log n) | O(n log n) | O(n log n) | O(log n) | No (`std::stable_sort` is) |
 
 - **Bubble sort:** swap adjacent out-of-order pairs. After pass `i`, the largest `i + 1` elements are in their final place, so the inner loop can stop at `n - 1 - i`. If a pass makes no swaps, the array is sorted → return early (this is what gives the O(n) best case).
+- **Selection sort:** for each `i`, find the minimum of `[i, n)` and swap it into `i`. It always scans the whole unsorted part, so it's O(n²) even on sorted input. It makes at most `n - 1` swaps, which helps when writes are expensive. It's **not stable**, because the long-distance swap can jump an element past an equal one (e.g. `[2a, 2b, 1]` → `[1, 2b, 2a]`).
+- **Insertion sort:** grow a sorted prefix. Take `key = a[i]`, shift larger elements of `[0, i)` one step right, then drop `key` into the gap. Shifting only while `a[j] > key` (strict) keeps it **stable**. Sorted input means no shifts, so the best case is O(n), and it's fast on nearly sorted or small arrays. That's why `std::sort` (introsort) switches to it for small partitions.
 - **Merge sort:** split at `mid`, sort both halves recursively, then **merge** two sorted halves with two pointers into a temp buffer and copy it back. Taking from the left half on ties (`<=`) keeps it **stable**. Its runtime doesn't depend on the input order.
 - **Quick sort:** pick a pivot and **partition** so that smaller elements go left and the rest go right. The pivot is then at its final index, so recurse on each side.
   - **Lomuto partition:** move the pivot to `end`, keep `i` as the boundary of the "< pivot" region, scan `j` and swap smaller elements to `i++`, then swap the pivot into `i`.
@@ -116,6 +122,14 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - **Padding:** make `P` size `(n+1) × (m+1)` with a zero first row and column, and shift indices by one. That removes every `< 0` bounds check.
 - The 1D version is the same idea: `sum(l..r) = P[r+1] - P[l]`.
 
+## Difference array (many range updates, read at the end)
+- The reverse of prefix sums. To add `v` to every element of `a[l..r]`, do `diff[l] += v` and `diff[r+1] -= v`. After all updates, a running sum over `diff` gives the final array.
+- O(1) per update and O(n) to rebuild, so O(n + q) in total, vs O(n·q) for updating each range in a loop.
+- Size `diff` as `n + 1` so `diff[r+1]` never needs a bounds check.
+- Use `long long` when the totals can grow: `q = 2·10⁵` updates of `v = 10⁹` reach `2·10¹⁴`.
+- It only works when all the updates come before the reads. Mixing updates and queries needs a Fenwick or segment tree.
+- 2D version: add at `(r1, c1)` and `(r2+1, c2+1)`, subtract at `(r1, c2+1)` and `(r2+1, c1)`, then take 2D prefix sums.
+
 ## Prefix and suffix products (everything except `i`)
 - "Combine everything except index `i`" = (combine of everything **left** of `i`) ⊕ (combine of everything **right** of `i`). Build a left-to-right prefix array and a right-to-left suffix array, both starting at the identity (`1` for products), each shifted by one so index `i` excludes itself.
 - **Why not divide?** `total / nums[i]` breaks on zeros (one zero → only that index is non-zero; two or more → all zeros) and the problem forbids division anyway. Prefix/suffix handles zeros with no special cases.
@@ -126,7 +140,8 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - Sweep once, keeping `count[prefixSum]` for every prefix seen so far. At each step add `count[currSum - k]` to the answer, **then** record `currSum`. Recording first would count the empty subarray when `k == 0`.
 - Seed with `count[0] = 1` (the empty prefix) so subarrays that start at index 0 are counted.
 - Works with **negatives and zeros**, which is exactly where a sliding window breaks (the window sum is no longer monotonic as it grows).
-- Same trick, different map value: store the **first index** of each prefix instead of a count to get the *longest* subarray with sum `k`. Use `prefix % m` as the key for "sum divisible by `m`".
+- Same trick, different map value: store the **first index** of each prefix instead of a count to get the *longest* subarray with sum `k`. Seed with `first[0] = -1`, and never overwrite an entry, because the earliest index gives the longest subarray. Use `prefix % m` as the key for "sum divisible by `m`" (normalised, so negatives land in `[0, m)`).
+- **Equal 0s and 1s:** count a `1` as `+1` and a `0` as `-1`. A subarray has equal counts exactly when its sum is `0`, so it becomes "longest subarray with sum 0". The running sum stays in `[-n, n]`, so a `vector<int>(2n + 1)` indexed by `sum + n` can replace the map.
 - `map[x]` on a missing key inserts it. Use `find` when you only want to read, so the map doesn't fill up with zero entries.
 
 ## Monotonic stack (nearest smaller to the left)
@@ -188,8 +203,11 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 | 21 | Majority Element II | [majority_element_2.cpp](majority_element_2.cpp) | Hash map count with an `INT_MIN` "already added" marker **and** Boyer-Moore with two candidates | O(n) | O(n) / **O(1)** |
 | 22 | Subarray Sum Equals K | [subarray_sum_equal_k.cpp](subarray_sum_equal_k.cpp) | Prefix sum + hash map of prefix counts, seeded with `{0: 1}` | O(n) | O(n) |
 | 23 | First Missing Positive | [first_missing_positive.cpp](first_missing_positive.cpp) | `vector<bool>` of size `n + 1` **and** the input array as a hash set using sign marking **and** cyclic sort | O(n) | O(n) / **O(1)** / **O(1)** |
+| 24 | Contiguous Array (equal 0s and 1s) | [binary_array.cpp](binary_array.cpp) | `±1` running sum + map of first index for each sum | O(n) | O(n) |
+| 25 | Range Addition | [queries_to_add_v_every_element.cpp](queries_to_add_v_every_element.cpp) | Difference array, then one prefix-sum pass | O(n + q) | O(n) |
+| 26 | Remove Duplicates from Sorted Array | [remove_duplicates.cpp](remove_duplicates.cpp) | Read/write pointers with a hash set of seen values | O(n) | O(n) |
 
-`k` = alphabet size or string length (#13: number of distinct values), `m` = length of shortest string (#16: number of columns), `u` = number of unique values, `L` = total length of all strings, `N` = side length of the Sudoku board.
+`k` = alphabet size or string length (#13: number of distinct values), `m` = length of shortest string (#16: number of columns), `u` = number of unique values, `L` = total length of all strings, `N` = side length of the Sudoku board, `q` = number of updates.
 
 ### 1. Concatenation of Array
 - Build `ans` of size `2n` with `ans[i] = nums[i % n]`. One loop, no need to copy twice.
@@ -343,3 +361,31 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - The in-place version changes the caller's array. Note that in an interview, or copy the input first if the caller still needs it.
 - Edge cases tested: empty, single `1` / `2`, all non-positive, a permutation of `1..n`, duplicates, values `n`, `n + 1` and `n + 2` (the replacement value), `INT_MIN`/`INT_MAX`. Every case runs against all three versions. A random cross-check runs 1000 arrays (length 0–30, values −5…35) and compares the in-place and cyclic versions with the bool array version.
 - See [Using the array as its own hash set](#using-the-array-as-its-own-hash-set-sign-marking) and [Cyclic sort](#cyclic-sort-place-each-value-at-index-v---1).
+
+### 24. Contiguous Array (equal 0s and 1s)
+- **`longestEqualBinarySubarray`:** `currSum` goes up on `1` and down on `0`. `mp` holds the first index where each sum appeared, seeded with `mp[0] = -1` so a subarray starting at index 0 is counted. The answer is the largest `i - mp[currSum]`.
+- The entry is inserted **before** the length is computed. That's safe: a sum seen for the first time gives length `0`.
+- `main` runs one example (`[0×6, 1×4]` → `8`). It was written for quiz 1 (3.6) and matched a brute force on 2000 random arrays when graded.
+- Possible improvement: `vector<int>(2n + 1, -2)` indexed by `currSum + n` instead of `unordered_map`.
+- See [Prefix sum + hash map](#prefix-sum--hash-map-count-subarrays-with-sum-k).
+
+### 25. Range Addition
+- **`getArrayAfterQueries`:** each query `{v, {l, r}}` (inclusive) does `add_k[l] += v` and `add_k[r + 1] -= v`, then a running sum over `add_k` builds the result. O(n + q).
+- The `if (r + 1 < n)` guard skips the subtraction when the range reaches the end. It also lets `r` go past the array (`main` uses `r = 7` with `n = 5`), but an `l >= n` would still be out of bounds.
+- `main` runs one example (`n = 5`, `+1` on `[2, 4]`, `+5` on `[0, 7]` → `5 5 6 6 6`). It was written for quiz 1 (3.8) and matched brute force on random tests.
+- Possible improvements: size `add_k` as `n + 1` to drop the guard, and use `long long` for large `v` and `q`. `res` could also be dropped by building the running sum in `add_k` itself.
+- See [Difference array](#difference-array-many-range-updates-read-at-the-end).
+
+### 26. Remove Duplicates from Sorted Array
+- **`removeDuplicates`:** `s.insert(nums[r]).second` is `true` the first time a value is seen, and then it's swapped to `nums[w++]`. It returns `w`, the number of unique values, which sit in `nums[0..w)` in their original order.
+- The swap leaves the tail scrambled (`[1,1,1,2,2,3,3,4,4,4]` → `1 2 3 4 2 1 3 1 4 4`). That's fine, because only the first `w` slots count.
+- It works on unsorted input too, but it ignores the "sorted" hint and uses O(n) extra space. The O(1) version compares with the last kept value:
+  ```cpp
+  if (nums.empty()) return 0;
+  int w = 1;
+  for (int r = 1; r < (int) nums.size(); r++)
+      if (nums[r] != nums[w - 1]) nums[w++] = nums[r];
+  return w;
+  ```
+- `main` runs one example. It was written for quiz 1 (6.6).
+- See [Two pointers on an array](#two-pointers-on-an-array-in-place).
