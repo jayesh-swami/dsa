@@ -32,6 +32,10 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - O(n) time, **O(1) space** (vs O(n) space for the hash map counting approach).
 - **Catch:** it assumes a majority exists. If that's not guaranteed, do a second pass to verify the candidate's count is `> n/2`.
 
+- **Generalisation (`> n/k`):** at most `k - 1` values can appear more than `n/k` times, so keep `k - 1` candidate/count pairs. A new value that matches no candidate and finds no empty slot decrements **all** counts. For `n/3` that's two candidates.
+- With more than one candidate the **verification pass is mandatory**: the candidates are only "possible" answers, e.g. in `[1, 2, 3]` something survives even though nothing is above `n/3`.
+- **Pitfall:** never let the two candidates hold the same value. If both start at the same sentinel (e.g. `-1`) and one never gets replaced, a real `-1` in the input is counted for both and reported twice. Count with `if / else if` in the verification pass, or check `cd1 != cd2` before adding the second one.
+
 ## `std::move` (from `<utility>`)
 - `std::move` doesn't move anything by itself — it casts to an rvalue so the **move constructor/assignment** is chosen.
 - For types that own heap memory (`string`, `vector`), moving transfers the internal buffer pointer: **O(1)** instead of an **O(len)** copy. This is similar to how Java passes object references around.
@@ -117,6 +121,38 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - **Why not divide?** `total / nums[i]` breaks on zeros (one zero → only that index is non-zero; two or more → all zeros) and the problem forbids division anyway. Prefix/suffix handles zeros with no special cases.
 - **O(1) extra space:** write the prefix products straight into the output array, then sweep right to left with a single running suffix variable and multiply it in. The output array doesn't count as extra space.
 
+## Prefix sum + hash map (count subarrays with sum `k`)
+- `sum(i+1..j) = prefix[j] - prefix[i]`. So a subarray ending at `j` sums to `k` exactly when some earlier prefix equals `prefix[j] - k`.
+- Sweep once, keeping `count[prefixSum]` for every prefix seen so far. At each step add `count[currSum - k]` to the answer, **then** record `currSum`. Recording first would count the empty subarray when `k == 0`.
+- Seed with `count[0] = 1` (the empty prefix) so subarrays that start at index 0 are counted.
+- Works with **negatives and zeros**, which is exactly where a sliding window breaks (the window sum is no longer monotonic as it grows).
+- Same trick, different map value: store the **first index** of each prefix instead of a count to get the *longest* subarray with sum `k`. Use `prefix % m` as the key for "sum divisible by `m`".
+- `map[x]` on a missing key inserts it. Use `find` when you only want to read, so the map doesn't fill up with zero entries.
+
+## Monotonic stack (nearest smaller to the left)
+- Keep a stack whose values stay sorted (non-decreasing from bottom to top). For each new element, **pop everything bigger**, read the top (the nearest element to the left that is `<=` the current one), then push the current element.
+- Each index is pushed and popped at most once, so the whole sweep is O(n), even though there's a `while` inside the `for`.
+- Store `(value, index)` pairs when you need to know *where* the nearest smaller element was, not just its value.
+- Flip the comparison for "nearest greater", or sweep right to left for "nearest to the right".
+
+## Greedy: sum of positive differences (unlimited transactions)
+- When you can trade as often as you like, any trade `buy a → sell b` equals the sum of the daily steps `a→a+1, …, b-1→b`. So the best profit is the sum of every positive `prices[i] - prices[i-1]`.
+- Check whether "one big move" can be broken into small independent moves. If it can, a greedy that takes every small gain is optimal.
+
+## Using the array as its own hash set (sign marking)
+- If the answers that matter are in `1..n` (`n = nums.size()`), index `v - 1` can be the "seen" flag for value `v`. Make `nums[v - 1]` negative to mark `v` present. O(1) extra space, but **it destroys the input**.
+- First clear out values that would confuse the marking: anything `<= 0` becomes something out of range (like `n + 1`). A `0` can't hold a negative mark, and existing negatives would look like marks.
+- Read values with `abs()`, because an earlier step may have already flipped that slot negative.
+- Only flip when the slot is still positive, so a duplicate doesn't flip it back.
+- Related: **cyclic sort** puts each `v` in `1..n` at index `v - 1` by swapping. Same O(n) time and O(1) space, and the input keeps its values (just reordered).
+
+## Cyclic sort (place each value at index `v - 1`)
+- For each `i`, keep swapping `nums[i]` into slot `nums[i] - 1` **while** it's in `1..n` and that slot doesn't already hold it. Then the first `i` with `nums[i] != i + 1` is a missing value.
+- The guard `nums[nums[i] - 1] != nums[i]` matters twice: it stops duplicates (`{1, 1}`) from swapping forever, and it already covers `nums[i] == i + 1`, so a separate check for that is redundant.
+- A `while` inside a `for`, but O(n): every swap puts one value in its final slot, so there are at most `n` swaps in total.
+- Compared with sign marking: no `abs`, no replacement value, and the values survive (just reordered). It still changes the input order.
+- The same pattern solves Missing Number, Find All Duplicates and Find All Missing Numbers.
+
 ## Memory ownership in C++
 - Returning `vector` → RAII, no manual cleanup.
 - Output buffer parameter → caller owns memory.
@@ -148,6 +184,10 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 | 17 | Product of Array Except Self | [product_of_array_except_self.cpp](product_of_array_except_self.cpp) | Prefix and suffix product arrays **and** output array plus a running suffix | O(n) | O(n) / **O(1)** extra |
 | 18 | Valid Sudoku | [valid_sudoku.cpp](valid_sudoku.cpp) | Hash set per row/column/box with box index math, for 9×9 **and** any N×N | O(N²) | O(N) |
 | 19 | Longest Consecutive Sequence | [longest_consecutive_seq.cpp](longest_consecutive_seq.cpp) | Hash set, count only from run starts (`n - 1` absent) | O(n) | O(n) |
+| 20 | Best Time to Buy and Sell Stock II | [best_time_to_buy_and_sell_stock_2.cpp](best_time_to_buy_and_sell_stock_2.cpp) | DP over every buy day, DP with a monotonic stack **and** greedy sum of upward moves | O(n²) / O(n) / **O(n)** | O(n) / O(n) / **O(1)** |
+| 21 | Majority Element II | [majority_element_2.cpp](majority_element_2.cpp) | Hash map count with an `INT_MIN` "already added" marker **and** Boyer-Moore with two candidates | O(n) | O(n) / **O(1)** |
+| 22 | Subarray Sum Equals K | [subarray_sum_equal_k.cpp](subarray_sum_equal_k.cpp) | Prefix sum + hash map of prefix counts, seeded with `{0: 1}` | O(n) | O(n) |
+| 23 | First Missing Positive | [first_missing_positive.cpp](first_missing_positive.cpp) | `vector<bool>` of size `n + 1` **and** the input array as a hash set using sign marking **and** cyclic sort | O(n) | O(n) / **O(1)** / **O(1)** |
 
 `k` = alphabet size or string length (#13: number of distinct values), `m` = length of shortest string (#16: number of columns), `u` = number of unique values, `L` = total length of all strings, `N` = side length of the Sudoku board.
 
@@ -265,3 +305,41 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - Edge cases tested: empty, single, duplicates, all the same, negatives, crossing zero, no consecutive numbers, two equal runs, values near `±10⁹`.
 - `i++` past `INT_MAX` would overflow if the input contained `INT_MAX`. LeetCode's range (`|x| ≤ 10⁹`) avoids this.
 - See [Sequence starts](#sequence-starts-longest-consecutive-run).
+
+### 20. Best Time to Buy and Sell Stock II
+- **`maxProfit` (naive DP):** `profitUntilN[k]` = best profit using days `0..k-1`, padded so `profitUntilN[0] = 0`. For each sell day `i`, try every earlier buy day `j-1`: `profitUntilN[j] + prices[i] - prices[j-1]`. Also carry forward the best value so far for the case where you don't sell on day `i`. O(n²).
+- **`maxProfitOptimized` (monotonic stack):** you only need to try buying on the nearest day to the left with price `<=` today. Days in between cost more than today. For an earlier day `j`, "buy at `j`, sell at `k`" is already counted in `profitUntilN[k+1]`, so buying at `k` is never worse. O(n) time and space.
+- **Always update `maxPro` even on days you don't sell.** Without it, a day with nothing smaller to its left (an empty stack) drops the profit you already made.
+- **`maxProfitGreedy`:** add up every positive day-to-day difference. O(n) time, O(1) space. This is the one to use, and the DP versions are good for checking it.
+- The original version didn't compile: `pair` was used without `using std::pair` (and `<utility>`).
+- Edge cases tested: empty, single day, strictly increasing/decreasing, all equal, plateaus, zigzag, a dip then a rise. A random cross-check runs 1000 arrays (length 0–50, values 0–20, so lots of ties) and compares the stack and greedy versions with the naive DP.
+- See [Monotonic stack](#monotonic-stack-nearest-smaller-to-the-left) and [Greedy: sum of positive differences](#greedy-sum-of-positive-differences-unlimited-transactions).
+
+### 21. Majority Element II
+- **`majorityElement` (hash map):** count each value and push it the moment its count goes above `n/3`. Setting the count to `INT_MIN` afterwards stops it being pushed again. A simpler check is `if (++mp[n] == n/3 + 1)`: it's true exactly once per value, with no sentinel.
+- **`majorityElementBoyerMoore`:** two candidates and two counts, then a second pass to count each candidate for real. O(n) time, O(1) space.
+- **Bug found by the tests:** both candidates start at the same value (first `-1`, then `INT_MIN`). If the input contains that value and `cd2` is never replaced, `cd1 == cd2`, both counts include it, and it's returned twice (`[-1]` → `[-1, -1]`, `[INT_MIN]` → `[INT_MIN, INT_MIN]`). Changing the starting value only moves the bug, because any `int` can appear in the input. **Fixed** by making the second `if` in the verification loop an `else if`, so one value can't be counted for both candidates (checking `cd1 != cd2` before pushing `cd2` also works).
+- "More than `n/3`" is strict: in `[1, 1, 2, 2, 3, 3]` nothing qualifies, and in `[1, 2, 2, 2, 1, 1, 1, 1, 1, 1]` the `2` appears exactly `10/3 = 3` times, so only `1` is returned.
+- Answers can come back in any order, so the tests compare sorted results.
+- Edge cases tested: empty, single, two different values, all the same, nothing above `n/3`, exactly `n/3`, negatives, `-1` and `INT_MIN` (starting values that were tried), `INT_MIN`/`INT_MAX`. A random cross-check runs 1000 arrays (length 0–30, values −2…3) and compares Boyer-Moore with the hash map version.
+- See [Boyer-Moore Voting Algorithm](#boyer-moore-voting-algorithm).
+
+### 22. Subarray Sum Equals K
+- One pass: running `currSum`, add `mp[currSum - k]` to the total, then `mp[currSum]++`. `mp[0] = 1` stands for the empty prefix, so a subarray starting at index 0 is counted.
+- The lookup order matters: look up **before** inserting `currSum`, otherwise `k == 0` counts each empty subarray.
+- `mp[currSum - k]` inserts a `0` entry for every miss. That's harmless for the answer but grows the map; `find` avoids it.
+- `int` is enough under LeetCode's limits (`n ≤ 2·10⁴`, `|nums[i]| ≤ 1000` → `|sum| ≤ 2·10⁷`). Use `long long` if the limits are bigger.
+- Edge cases tested: empty, single element, no match, whole array, negatives, `k = 0` with zeros (`[0, 0, 0]` → 6), negative `k`, repeated prefix sums. A random cross-check runs 1000 arrays (length 0–50, values −3…3, `k` in −5…5) against an O(n²) brute force.
+- See [Prefix sum + hash map](#prefix-sum--hash-map-count-subarrays-with-sum-k).
+
+### 23. First Missing Positive
+- **Key fact:** the answer is always in `1..n+1`. With `n` slots, the best case is that `1..n` are all present, and then the answer is `n + 1`. Anything `<= 0` or `> n` can be ignored.
+- **`firstMissingPositive` (bool array):** mark `present[v]` for every `v` in `1..n`, then return the first unmarked index. Size `n + 1` is enough (not `1e6`) because of the key fact above. O(n) time and space.
+- **`firstMissingPositiveInPlace` (sign marking):** replace `<= 0` with `n + 2` (anything `> n` works, `n + 1` too), mark `v` by making `nums[v - 1]` negative, then the first positive index `i` means `i + 1` is missing. O(n) time, O(1) extra space.
+- **`firstMissingPositiveCyclic` (cyclic sort):** swap each `v` in `1..n` to index `v - 1` while the target slot doesn't already hold it, then return the first `i + 1` with `nums[i] != i + 1`. O(n) time (at most `n` swaps in total), O(1) extra space. The first draft had a redundant `j` copy of the loop index and a redundant `nums[j] != j + 1` check, both removed.
+- Both versions originally had the same name, so the file didn't compile; the second was renamed to `firstMissingPositiveInPlace`.
+- In the in-place version, `val != 0` is always true after the first loop, since every `<= 0` value was replaced.
+- `abs(INT_MIN)` would overflow, but it can't happen here: negatives are replaced before anything calls `abs`, and the marks we write are at least `-n`.
+- The in-place version changes the caller's array. Note that in an interview, or copy the input first if the caller still needs it.
+- Edge cases tested: empty, single `1` / `2`, all non-positive, a permutation of `1..n`, duplicates, values `n`, `n + 1` and `n + 2` (the replacement value), `INT_MIN`/`INT_MAX`. Every case runs against all three versions. A random cross-check runs 1000 arrays (length 0–30, values −5…35) and compares the in-place and cyclic versions with the bool array version.
+- See [Using the array as its own hash set](#using-the-array-as-its-own-hash-set-sign-marking) and [Cyclic sort](#cyclic-sort-place-each-value-at-index-v---1).
