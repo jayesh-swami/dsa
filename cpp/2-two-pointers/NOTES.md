@@ -34,7 +34,7 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - Their results depend on the C locale. For contest/interview input that's always the default `"C"` locale, so this rarely matters.
 
 ## Copy or reference for a string parameter
-- `bool f(string s)` copies the string: O(n) extra space. That's fine if you mutate it (e.g. lowercase it in place) and want the caller's string left alone.
+- `bool f(string s)` copies the string: O(n) extra space. That's fine if you mutate it (e.g. lowercase it in place) and want the caller's string left alone. If the function only reads `s`, the copy is wasted.
 - `bool f(const string& s)` doesn't copy and accepts temporaries/literals (`f("abc")`).
 - `bool f(string& s)` (non-const) **rejects** literals and temporaries, and tells the reader the function may modify the argument. Only use it when it really does, like `reverseString(vector<char>&)`.
 
@@ -48,7 +48,7 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 | # | Problem | File | Approach | Time | Space |
 |---|---------|------|----------|------|-------|
 | 1 | Reverse String | [reverse_string.cpp](reverse_string.cpp) | Swap mirrored pairs `i` and `n - 1 - i` up to `n / 2` | O(n) | O(1) |
-| 2 | Valid Palindrome | [valid_palindrome.cpp](valid_palindrome.cpp) | Lowercase a copy, then converging pointers that skip non-alphanumerics | O(n) | O(n) |
+| 2 | Valid Palindrome | [valid_palindrome.cpp](valid_palindrome.cpp) | Converging pointers that skip non-alphanumerics and compare with `tolower` | O(n) | O(1) |
 | 3 | Valid Palindrome II (one deletion) | [valid_palindrome_with_deletion.cpp](valid_palindrome_with_deletion.cpp) | Converging pointers. At the first mismatch, check both `[l + 1, r]` and `[l, r - 1]` | O(n) | O(1) |
 
 Every file has a test harness (`main` + `runTests`) with hand-picked edge cases and a random cross-check against a brute force.
@@ -59,11 +59,10 @@ Every file has a test harness (`main` + `runTests`) with hand-picked edge cases 
 - Edge cases tested: empty and single char (`n / 2 == 0`, so the loop doesn't run), two chars (one swap), odd length (the middle char stays), even length, palindrome and all same chars (output equals input), non-letters. A random cross-check runs 1000 arrays (length 0–50) against `std::reverse`.
 
 ### 2. Valid Palindrome
-- **`validPalindrome`:** lowercase every char of the copy, then run converging pointers. If `s[l]` isn't alphanumeric, `l++`. Otherwise, if `s[r]` isn't, `r--`. Otherwise compare and move both.
+- **`validPalindrome`:** converging pointers. If `s[l]` isn't alphanumeric, `l++`. Otherwise, if `s[r]` isn't, `r--`. Otherwise compare `tolower(s[l++]) != tolower(s[r--])` and move both.
+- An earlier version took `string s` by value and lowercased the whole copy first: O(n) extra space and one extra pass. Comparing with `tolower` directly means nothing modifies `s`, so it now takes `const string&`, and the extra space is O(1) (see [Copy or reference for a string parameter](#copy-or-reference-for-a-string-parameter)).
 - Edge cases tested: empty (`r` starts at `-1`), only spaces, only punctuation (all skipped → `true`), mixed case (`"Aa"`), digits are alphanumeric (`"0P"` → `false`), digit-only strings, punctuation at one or both ends, `"a."`, underscore (not alphanumeric), the classic `"A man, a plan, a canal: Panama"` / `"race a car"`. A random cross-check runs 5000 strings (length 0–12 over `"aAbB0 ,.:"`) against a filter-and-reverse brute force.
-- Possible improvements:
-  - Take `const string&` and compare `tolower(s[l]) != tolower(s[r])` directly. That drops the copy and the lowercasing pass, so the extra space is O(1).
-  - Cast to `unsigned char` before calling `isalnum` / `tolower`, so non-ASCII input isn't UB (see [`<cctype>` pitfalls](#cctype-pitfalls-isalnum-tolower-)).
+- The input is guaranteed to be printable ASCII, so passing a plain `char` to `isalnum` / `tolower` is safe here. Without that guarantee, cast to `unsigned char` first (see [`<cctype>` pitfalls](#cctype-pitfalls-isalnum-tolower-)).
 - See [Converging pointers](#converging-pointers-opposite-ends) and [Skipping elements inside the loop](#skipping-elements-inside-the-loop).
 
 ### 3. Valid Palindrome II (one deletion)

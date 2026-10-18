@@ -8,15 +8,14 @@
 using std::cout;
 using std::string;
 
-bool validPalindrome(string s) {
-	for (char& c : s) c = tolower(c);
+bool validPalindrome(const string& s) {
 
 	int l = 0, r = s.size() - 1;
 
 	while(l < r) {
 		if(!isalnum(s[l])) l++;
 		else if(!isalnum(s[r])) r--;
-		else if(s[l++] != s[r--]) return false;
+		else if(tolower(s[l++]) != tolower(s[r--])) return false;
 	}
 
 	return true;
