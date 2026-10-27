@@ -1,5 +1,3 @@
-// Compile: g++ -std=c++20 -Wall -Wextra -g -fsanitize=address,undefined valid_palindrome_with_deletion.cpp -o valid_palindrome_with_deletion
-
 #include <iostream>
 #include <random>
 #include <string>
@@ -29,7 +27,7 @@ bool validPalindrome(const string& s) {
 	return true;
 }
 
-// ---- test harness ----
+// ---- minimal test harness ----
 
 int failures = 0;
 
@@ -77,16 +75,6 @@ void randomCrossCheck() {
 	}
 }
 
-// Edge cases:
-// - empty / single char: already palindromes, no deletion needed
-// - two different chars: deleting either one leaves a single char
-// - already a palindrome: deleting is optional ("at most one")
-// - the extra char at the very start / very end
-// - both skips look valid at the first mismatch, but only one works later:
-//   "abbab" needs the right skip, "babba" needs the left skip.
-//   A greedy "skip whichever side matches next" fails one of them, so try both.
-// - needs two deletions: must be false
-// - a second mismatch after the skip: the inner check must not skip again
 void runTests() {
 	check("empty",                          validPalindrome(""),          true);
 	check("single char",                    validPalindrome("a"),         true);

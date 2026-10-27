@@ -1,5 +1,3 @@
-// Compile: g++ -std=c++20 -Wall -Wextra -g -fsanitize=address,undefined valid_palindrome.cpp -o valid_palindrome
-
 #include <iostream>
 #include <random>
 #include <string>
@@ -21,7 +19,7 @@ bool validPalindrome(const string& s) {
 	return true;
 }
 
-// ---- test harness ----
+// ---- minimal test harness ----
 
 int failures = 0;
 
@@ -66,13 +64,6 @@ void randomCrossCheck() {
 	}
 }
 
-// Edge cases:
-// - empty string: r starts at -1 (size() - 1 wraps, then converts to int), loop never runs
-// - only non-alphanumerics: everything is skipped, counts as an empty palindrome
-// - mixed case: 'A' and 'a' must match
-// - digits are alphanumeric: "0P" is false, not "skip the 0"
-// - non-alphanumerics at the ends / both ends at once
-// - underscore is not alphanumeric (isalnum('_') is false)
 void runTests() {
 	check("empty",                    validPalindrome(""),                               true);
 	check("single char",              validPalindrome("a"),                              true);

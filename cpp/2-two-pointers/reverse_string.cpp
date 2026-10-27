@@ -1,11 +1,8 @@
-// Compile: g++ -std=c++20 -Wall -Wextra -g -fsanitize=address,undefined reverse_string.cpp -o reverse_string
-
 #include <algorithm>
 #include <iostream>
 #include <random>
 #include <vector>
 #include <string>
-#include <type_traits>
 #include <utility>
 
 using std::cout;
@@ -23,46 +20,18 @@ void reverseString(vector<char>& str) {
 	return;
 }
 
-// ---- test harness ----
+// ---- minimal test harness ----
 
 int failures = 0;
 
-template <typename T>
-void show(const T& x) {
-	cout << x;
-}
-
-void show(const string& s) {
-	cout << '"' << s << '"';
-}
-
-void show(char c) {
-	cout << '\'' << c << '\'';
-}
-
-template <typename T>
-void show(const vector<T>& v) {
-	cout << "[";
-	for (size_t i = 0; i < v.size(); i++) {
-		if (i) cout << ", ";
-		show(v[i]);
-	}
-	cout << "]";
-}
-
-template <typename T>
-void check(const string& name, const T& got, const std::type_identity_t<T>& expected) {
+void check(const string& name, const vector<char>& got, const vector<char>& expected) {
 	if (got == expected) {
 		cout << "PASS  " << name << '\n';
-		return;
+	} else {
+		cout << "FAIL  " << name << "  (expected \"" << string(expected.begin(), expected.end())
+		     << "\", got \"" << string(got.begin(), got.end()) << "\")\n";
+		failures++;
 	}
-
-	cout << "FAIL  " << name << "\n  expected: ";
-	show(expected);
-	cout << "\n  got:      ";
-	show(got);
-	cout << '\n';
-	failures++;
 }
 
 // reverses a copy, since reverseString works in place
@@ -95,12 +64,6 @@ void randomCrossCheck() {
 	}
 }
 
-// Edge cases:
-// - empty and single char: the loop must not run (n / 2 == 0)
-// - two chars: smallest case with exactly one swap
-// - odd length: the middle char stays where it is
-// - even length: no middle, every char moves
-// - palindrome / all same chars: output equals input
 void runTests() {
 	check("empty",           reversed({}),                         {});
 	check("single char",     reversed({'a'}),                      {'a'});
