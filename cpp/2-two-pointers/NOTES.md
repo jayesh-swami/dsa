@@ -32,6 +32,36 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - Once `nums2` runs out, the remaining `nums1` elements are already in place, so **only the `p2` tail needs draining**.
 - Move with assignment (`nums1[curr--] = nums2[p2--]`), not `swap`. Assignment is one write instead of three, and `swap` also overwrites the caller's `nums2` with whatever was in the placeholder slots.
 
+## Discarding a side safely (Container With Most Water)
+- Converging pointers only work if each move **provably throws away no answer**. Say why before writing the move.
+- Container: `area(l, r) = min(h[l], h[r]) * (r - l)`. Suppose `h[l] <= h[r]`. Any other container that uses `l` with `r' < r` has a height of at most `h[l]` (the shorter side caps it) and a smaller width, so its area is less than the area just computed. So `l` can't be in a better answer than the current one, and `l++` is safe.
+- Move the **shorter** side. Moving the taller one keeps the cap `h[l]` and only shrinks the width, so it can skip the best pair: on `[1, 8, 6, 2, 5, 4, 8, 3, 7]` it gives 8 instead of 49. On a tie, either side can move, because the argument applies to both.
+- **Skipping more (constant factor):** after computing the area with `h = min(h[l], h[r])`, every line on either side with height `<= h` can be skipped, because any container using one has height `<= h` and a smaller width. `while (l < r && h[l] <= h) l++; while (l < r && h[r] <= h) r--;`
+- The same "why can this side go" check is what was missing in the first 4Sum two-pointer attempt (see [7. 4Sum](#7-4sum)).
+
+## Greedy pairing from both ends (Boats to Save People)
+- Sort, then pair the **heaviest** remaining person with the **lightest**. If they fit together, both go (`l++`, `r--`). If not, the heaviest goes alone (`r--`). Either way that's one boat.
+- **Why it's optimal (exchange argument):**
+  - The heaviest person `r` needs a boat in every solution.
+  - If even the lightest doesn't fit with them, nobody does, so `r` goes alone in every solution.
+  - If the lightest fits with them: take any optimal solution where `r` isn't with `l`. Say `r` shares with `x` (or is alone) and `l` shares with `y` (or is alone). Swap `l` and `x`, so the boats become `{r, l}` and `{x, y}`. `{r, l}` fits by assumption. `{x, y}` fits because `y <= r` (`r` is the heaviest), so `x + y <= x + r <= limit`. Missing partners just leave someone alone. The boat count doesn't change, so pairing `r` with `l` is never worse.
+- It's the same "say why this side can go" check as in [Discarding a side safely](#discarding-a-side-safely-container-with-most-water), here for a greedy choice instead of a search.
+- `l <= r`, not `l < r`: when `l == r`, one person is left and still needs a boat. Both branches then end the loop after counting one boat.
+- **Counting sort for small value ranges:** weights are at most `limit` (≤ 3·10⁴), so counting sort makes the sort O(n + limit) instead of O(n log n). See [Counting sort](../1-arrays_and_hashing/NOTES.md#counting-sort-and-bucket-sort-by-frequency). Size the counts by the bound in the input (`limit`), not a hardcoded constant, and make sure every value is within it, or `counts[v]` writes out of bounds.
+
+## Water above a bar (Trapping Rain Water)
+- The water above bar `i` is `min(maxLeft(i), maxRight(i)) - h[i]`, where both maxes **include** `i` itself, so the result is never negative. The answer is the sum over all bars. Every approach is a way to get those two maxes cheaply.
+- **Prefix/suffix maxes:** one forward pass for the running max from the left, one backward pass for the running max from the right. O(n) time, O(n) space. The backward pass can keep its max in a variable and add up the water as it goes, so only one array is needed.
+- **Two pointers, O(1) space:** keep `leftMax` (max of `h[0..l]`) and `rightMax` (max of `h[r..n-1]`). Process the side with the **smaller max**: if `leftMax <= rightMax`, the real right max of `l` is at least `rightMax >= leftMax`, so the water at `l` is exactly `leftMax - h[l]`. The left side doesn't need to know the real right max, only that it's at least as tall.
+- The common variant compares the **bars** (`h[l] < h[r]`) instead of the maxes. It's also correct: a pointer only moves off a bar when the other side has a taller one, so the side with the shorter bar always has the smaller max. Comparing the maxes makes the proof one line, so it's easier to defend in an interview.
+- It's the same "say why this side can go" check as in [Discarding a side safely](#discarding-a-side-safely-container-with-most-water). Here the reason is "this side's water is already fully determined".
+- A third approach, the **monotonic stack**, fills the water in horizontal layers. It's covered with the stack topic.
+
+## Same-direction pointers on sorted input (dedupe)
+- On **sorted** input, equal values are next to each other, so "seen before" is just "equal to the last kept value". A write pointer `w` and a read pointer `r` both move forward: `if (nums[r] != nums[w - 1]) nums[w++] = nums[r];`. O(n) time, O(1) space, with no hash set (compare the hash-set version in [Arrays & Hashing #26](../1-arrays_and_hashing/NOTES.md#26-remove-duplicates-from-sorted-array)).
+- **At most `k` copies** of each value (Remove Duplicates II has `k = 2`): start `w = k` and compare with `nums[w - k]` instead of `nums[w - 1]`. If `nums[r]` equals the value `k` slots back, there are already `k` copies kept.
+- Move with assignment, not `swap`: the slots past `w` don't matter, so the extra writes are wasted (the same point as in [Merging in place from the back](#merging-in-place-from-the-back)).
+
 ## Fix one element, two-pointer the rest (3Sum)
 - Sort, then for each `i` run converging pointers on `[i + 1, n - 1]` looking for `-nums[i]`. That's O(n) per `i`, so **O(n²)** in total, and the O(n log n) sort doesn't change that.
 - Why converging works on sorted input: if the sum is too big, `nums[r]` is too big even with the smallest remaining `nums[l]`, so drop `r`. If it's too small, drop `l` for the same reason. Each step rules out one candidate.
@@ -45,6 +75,21 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 ## Take out, then put back (count maps)
 - A common pattern is to remove an element from a count map (`mp[x]--`), do some work, and put it back (`mp[x]++`). Any `continue`, `break` or `return` between the two skips the restore, and the counts drift lower every time it happens.
 - Do the skip checks **before** the `--`, so every `--` is always followed by its `++`.
+
+## Rotating an array in place
+- Reduce `k` first with `k %= n`, because rotating by `n` is a no-op and `k` can be larger than `n`. That needs `n > 0`: `k % 0` is UB (in practice the program crashes with SIGFPE).
+- **Reversal:** for a right rotation by `k`, reverse the whole array, then reverse `[0, k)` and `[k, n)`. Reversing everything moves the last `k` elements to the front, but backwards. Reversing each part restores the order inside it. About `n` swaps, O(1) space, and every pass walks memory in order.
+- A **left** rotation by `k` is a right rotation by `n - k`. Or reverse `[0, k)` and `[k, n)` first, then the whole array.
+- **Cyclic replacements (juggling):** start at `i`, carry the value to `i + k`, take the value that was there on to `i + 2k`, and so on until you're back at `i`. There are `gcd(n, k)` cycles of `n / gcd(n, k)` elements each, so loop over starting points until `n` elements have moved in total. Exactly `n` writes, but each step jumps `k` ahead, which is cache-unfriendly on large arrays. The reversal is often faster in practice even though it does more writes (see [Access pattern beats operation count](#access-pattern-beats-operation-count-cache)).
+- **`std::rotate(first, middle, last)`** (`<algorithm>`) makes `middle` the new first element. Right rotation by `k`: `middle = end() - k`. Left by `k`: `middle = begin() + k`. It returns an iterator to where the old first element ended up. O(n).
+- `%` keeps the sign of the left operand in C++, so `-1 % 5 == -1`, not `4`. For a `k` that may be negative, normalize with `((k % n) + n) % n`.
+
+## Access pattern beats operation count (cache)
+- Memory is loaded in **cache lines** (64 bytes, or 16 `int`s). Walking an array in order uses every value in each line, and the hardware **prefetcher** spots the pattern and loads the next lines before you need them.
+- **Jumping by a stride** (`i → i + k → i + 2k …`) uses one `int` per line once `k >= 16`, and the prefetcher can't predict wrapping jumps (`% n`). Once the array doesn't fit in cache, almost every access is a cache miss (roughly 100+ cycles to main memory, against a few cycles for an L1 hit).
+- So **fewer operations isn't automatically faster.** In Rotate Array, cyclic replacements do exactly `n` writes but jump around. The reversal does about `2n` writes but always in order, and it usually wins on large arrays. It's the same reason `vector` beats `list` (see [`vector` over `list`](#vector-over-list-the-default-container)).
+- Big-O ignores the constant factor, and cache behavior is often most of that constant. When two approaches have the same big-O, compare how they access memory. Measure if it matters.
+- This comes up a lot in HFT interviews: be ready to explain *why* the in-order version is faster, not just that it is.
 
 ## Unqualified `swap` and ADL
 - `swap(a, b)` with no `std::` and no `using std::swap;` **doesn't compile for `int`s**. Argument-dependent lookup (ADL) only searches the namespaces of the argument types, and built-in types like `int` have none.
@@ -92,7 +137,11 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 ## Standard library helpers
 - `std::reverse(v.begin(), v.end())` (`<algorithm>`) or `std::ranges::reverse(v)` (C++20) reverses in place, and is the built-in answer to Reverse String.
 - `string(s.rbegin(), s.rend())` builds a reversed copy. Handy for a brute-force palindrome check: `s == string(s.rbegin(), s.rend())`.
+- `std::max(a, b)` / `std::min(a, b)` are templates that take **two arguments of the same type**. `max(long, long long)` doesn't compile: `long` and `long long` are different types even where both are 64 bits, so the template can't deduce a single `T`. Make both sides the same type, or name it: `std::max<long long>(a, b)`.
 - `std::swap(a, b)` (`<utility>`) swaps two elements.
+  - Whenever you write the three-line `temp` exchange (`int temp = x; x = y; y = temp;`), use `std::swap(x, y)` instead. It works between any two variables of the same type, not just array elements: in Rotate Array, `int temp = nums[curr]; nums[curr] = prev; prev = temp;` is `std::swap(prev, nums[curr])`.
+  - It says what it does, can't get the order of the three assignments wrong, and is never slower (for `int` it compiles to the same code).
+  - For `vector`, `string` and other containers it moves instead of copying (O(1)), so `std::swap(v1, v2)` is cheap. A hand-written `temp` copy of a vector is O(n).
 
 # Problems
 
@@ -105,6 +154,12 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 | 5 | Merge Sorted Array | [merge_sorted_array.cpp](merge_sorted_array.cpp) | Fill `nums1` from the back with the larger of `nums1[p1]` / `nums2[p2]`, then drain `nums2` | O(n + m) | O(1) |
 | 6 | 3Sum | [3_sum.cpp](3_sum.cpp) | Sort, fix `nums[i]`, converging pointers on the rest for `-nums[i]`, skip repeats | O(n²) | O(1) extra (sort and output aside) |
 | 7 | 4Sum | [4_sum.cpp](4_sum.cpp) | Sort, then recursive kSum: fix one element per level, converging pointers when `k == 2`. (Also hashed: fix `i < j < k`, look up `target - sum` after `k`) | O(n³) | O(k) extra (output aside); hashed O(n) |
+| 8 | Rotate Array | [rotate_array.cpp](rotate_array.cpp) | `k %= n`, then reverse all, reverse `[0, k)`, reverse `[k, n)`. (Also cyclic replacements and `std::rotate`) | O(n) | O(1) |
+| 9 | Container With Most Water | [max_area.cpp](max_area.cpp) | Converging pointers: record `min(h[l], h[r]) * (r - l)`, then move the shorter side | O(n) | O(1) |
+| 10 | Boats to Save People | [boats_to_save_people.cpp](boats_to_save_people.cpp) | Sort, then pair heaviest with lightest if they fit, else heaviest alone; one boat per step | O(n log n), or O(n + limit) with counting sort | O(1), or O(limit) |
+| 11 | Two Sum II (sorted input) | [2_integere_sum.cpp](2_integere_sum.cpp) | Converging pointers: sum too small → `l++`, too big → `r--`, return 1-indexed | O(n) | O(1) |
+| 12 | Remove Duplicates from Sorted Array | [remove_duplicates.cpp](remove_duplicates.cpp) | Read pointer `r`, write pointer `l` on the last kept value; keep `nums[r]` when it differs | O(n) | O(1) |
+| 13 | Trapping Rain Water | [trapping_rain_water.cpp](trapping_rain_water.cpp) | Water at `i` is `min(maxLeft, maxRight) - h[i]`. Prefix/suffix maxes, or two pointers moving the side with the shorter bar | O(n) | O(n) prefix arrays, O(1) two pointers |
 
 Every file has a minimal test harness (`main` + `runTests`, plus `checkAll` when there are several implementations) with hand-picked edge cases and a random cross-check against a brute force.
 
@@ -177,3 +232,75 @@ Every file has a minimal test harness (`main` + `runTests`, plus `checkAll` when
 - **First attempt (an outer pair moving towards each other):** it moved `l`, `r` based on the single sum `nums[l] + nums[r] + nums[l + 1] + nums[r - 1]`. That's wrong: one sum with one middle pair says nothing about the other middle pairs, so moving `l` can discard a `nums[l]` that still pairs with a smaller `nums[r]`. It only tries O(n) outer pairs when O(n²) are needed. On `[-2, -1, 0, 2, 2, 3]` with target `2` it returned only `[-2, -1, 2, 3]` and missed `[-2, 0, 2, 2]`. It also summed in `int`.
 - The harness works like the 3Sum one, with the brute force summing in `long long`. Edge cases tested: empty, 3 elements, exactly 4 that do / don't hit the target, all equal (4 and 6 copies), LeetCode example 1, a negative target, answers sharing the first element and answers sharing the last, a gap between the outer and middle pairs, `[-2, -1, 0, 2, 2, 3]` with target `2` (same first element, different last), and the 1e9 overflow case. A random cross-check runs 5000 arrays (length 0–10, values −5..5, target −6..6) against an O(n⁴) brute force.
 - The outer-pair first attempt failed the same-first/different-last check, the overflow check, and 481 random arrays. Both current versions pass everything.
+
+### 8. Rotate Array
+- **`rotateCyclic`:** cyclic replacements. For each start `i`, carry `prev` around the cycle `i → i + k → …` (mod `n`) until it's back at `i`. The outer loop stops once `count` reaches `n`, which happens after `gcd(n, k)` cycles. See [Rotating an array in place](#rotating-an-array-in-place).
+- **`rotateByReversing`:** `k %= n`, then reverse all, reverse `[0, k)`, reverse `[k, n)`.
+- **`rotateUsingSTLFunction`:** `std::rotate(begin, end - k, end)`, so `end - k` becomes the first element. That's a right rotation.
+- All three now return early on `n == 0` and normalize a negative `k` with `k += n` after `k %= n`. After the `%`, a negative `k` is between `-n` and `0`, so one `+ n` is enough.
+- Fixes from review:
+  - **Empty input crashed all three:** `k % n` with `n == 0` divides by zero. Fixed with `if (n == 0) return;`.
+  - **A negative `k` broke them:** `k % n` stays negative, so the cyclic version indexed `nums[-1]` and `begin() + k` went out of range. Fixed with `if (k < 0) k += n;`. LeetCode doesn't allow a negative `k`, but it's a left rotation.
+  - The three `temp` lines in `rotateCyclic` became `swap(prev, nums[curr])` (see [Standard library helpers](#standard-library-helpers)). `prev` is the **value** being carried around the cycle.
+  - **An intermediate attempt that was wrong:** carrying an *index* (`swap(nums[prevIdx], nums[curr])` with `prevIdx = curr` after each step). After the first swap, `nums[i + k]` already holds the right value, and the next swap pushes that same value on to `i + 2k`. LeetCode example 1 gave `[1, 5, 6, 7, 4, 2, 3]`. Swapping with the fixed start, `swap(nums[i], nums[curr])`, also works: `nums[i]` then acts as the carry slot.
+  - All three now store `int n = nums.size();`, so the style is consistent.
+  - **`rotateCyclic` returns early on `k == 0`.** Without it, every element is its own cycle of length 1: the `do-while` runs its body once (`curr = i`, a swap of equal values) and exits. That's `n` writes that change nothing. It's still correct and O(n), just wasted.
+- **Performance:** cyclic does exactly `n` writes, but they're strided by `k`. The reversal makes about `2n` writes walking memory in order. For large arrays the reversal is usually the faster one (see [Access pattern beats operation count](#access-pattern-beats-operation-count-cache)), and it's the expected interview answer. Mention `std::rotate` as the built-in.
+- Edge cases tested: both LeetCode examples, a single element, `k = 0`, `k = n`, `k > n`, `k` much larger than `n`, `k = n - 1`, two elements, `gcd(n, k) = 2` and `3` (several cycles, so the outer loop of the cyclic version runs more than once), half of an even `n`, and duplicates. A random cross-check runs 5000 arrays (length 1–20, `k` 0–50) against a brute force that copies element `i` to `(i + k) % n` in a new array. Also tested: empty input, a negative `k` (left rotation), and a negative `k` with `|k| > n`.
+
+### 9. Container With Most Water
+- **`maxAreaNaive`:** every pair `i < j`, O(n²). It's used as the reference in the random check.
+- **`maxAreaTwoPointers`:** `l = 0`, `r = n - 1`. Record `h * (r - l)` with `h = min(h[l], h[r])`, then skip every line `<= h` on both sides (`while (l < r && h[l] <= h) l++;` and the same for `r`). The shorter side always has height `h`, so at least one pointer moves each iteration, and no separate "move the shorter side" step is needed. On a tie, both sides get skipped, which is safe. See [Discarding a side safely](#discarding-a-side-safely-container-with-most-water).
+- Fixes from review:
+  - **It didn't compile:** `max(min((long) …, (long) …) * (long) …, maxArea)` passed a `long` and a `long long` to `std::max` (see [Standard library helpers](#standard-library-helpers)). Both versions now compute `long long h = min(…)` and `h * (r - l)`, all in `long long`. That's the type to use anyway, because `long` is 32 bits on Windows (see [Signed overflow](#signed-overflow-the-type-comes-from-the-operands)).
+  - The skip loops replaced the `if (h[l] < h[r]) l++; else r--;` step. Both versions pass every test.
+- **Interview polish** (HFT interviewers notice these, and both are now applied):
+  - Both functions take `const vector<int>& heights`, since they only read it.
+  - The redundant `(long long) (r - l)` cast is gone. `h` is already `long long`, so in `h * (r - l)` the `int` on the right is promoted anyway. Knowing exactly which operand forces the widening is the point here (see [Signed overflow](#signed-overflow-the-type-comes-from-the-operands)).
+- `int r = (int) heights.size() - 1;` casts **before** subtracting, so an empty input gives `-1` and the loop doesn't run. That's correct.
+- LeetCode's limits (heights ≤ 10⁴, `n` ≤ 10⁵) keep the area ≤ 10⁹, which fits in `int`, but `long long` costs nothing and handles the `INT_MAX` test.
+- Edge cases tested: both LeetCode examples, empty, a single line, all zeros, all equal, strictly increasing and strictly decreasing, tall ends, a tall middle pair, equal ends with taller lines inside, and an area above `INT_MAX` (`{2e9, 1, 1, 2e9}` → 6×10⁹). A random cross-check runs 5000 arrays (length 0–30, heights 0–10) against the naive version.
+- Moving the taller side instead fails LeetCode example 1 (8 instead of 49) and 3 other checks. Moving `l` on a tie (`<=`) passes everything.
+
+### 10. Boats to Save People
+- **`numRescueBoats`:** `sort`, then `l = 0`, `r = n - 1` while `l <= r`. If `people[l] + people[r] > limit`, the heaviest goes alone (`r--`). Otherwise both go (`l++`, `r--`). Count one boat per step. See [Greedy pairing from both ends](#greedy-pairing-from-both-ends-boats-to-save-people).
+- **`numRescueBoatCountingSort`:** the same loop after `countSort(people, limit)`. Every weight is `<= limit`, so `limit + 1` buckets are enough.
+- Fixes from review:
+  - **It didn't compile:** `countSort` was called before it was declared (the same slip as `kSumHelper` in [4Sum](#7-4sum)). It's now declared at the top of the file.
+  - `countSort(people, 30000)` hardcoded LeetCode's bound. It's now `countSort(people, limit)`, so the bound comes from the input and the array is smaller when `limit` is small. A weight above the bucket size would write past the end of `counts` (UB). That's ruled out only by the "weight <= limit" constraint.
+  - The `long long boats` counter was returned as `int`. Both functions now return `long long`, so the types match. `int` would also be enough (at most `n` ≤ 5·10⁴ boats).
+- **Interview polish:**
+  - The two-pointer loop is copied into both functions. One helper taking the sorted array would make the versions differ only in how they sort.
+  - `long long totalWeight` isn't needed: two weights ≤ 3·10⁴ sum to ≤ 6·10⁴. It isn't wrong, but be ready to say why `int` fits (the habit is to *check* the bound, not to widen everything).
+  - The counting sort parameter `bucketSize` is really the maximum value.
+- Counting sort is O(n + limit) time and O(limit) extra space, against O(n log n) and O(1) (apart from `std::sort`'s stack) for the other. At LeetCode's sizes both are fast. Mention it as the follow-up when the value range is small.
+- Optional: with the counts you don't need to rebuild the sorted array. Run the two pointers over the weight values `1..limit` with the counts directly, which saves the O(n) write-back.
+- Edge cases tested: the three LeetCode examples, empty, a single person, pairs that fit exactly at the limit, everyone over half the limit (no pairs), all light (still at most two per boat), an odd number of light people, the heaviest equal to the limit, heaviest-with-lightest pairing (`{1, 2, 2, 3}`, limit `4` → 2), and two people at the maximum weight 30000 (the top bucket). A random cross-check runs 5000 groups (0–12 people, limit 1–10) against a subset DP brute force: the lowest-numbered person still waiting goes alone or with any one other person who fits.
+
+### 11. Two Sum II (sorted input)
+- **`twoSum(v, t)`:** `l = 0`, `r = n - 1`. If `v[l] + v[r] < t`, `l++`. If it equals `t`, return `{l + 1, r + 1}` (LeetCode is 1-indexed). Otherwise `r--`. It returns `{-1, -1}` if there's no pair, which LeetCode rules out (exactly one answer). Why each move is safe: see [Fix one element, two-pointer the rest](#fix-one-element-two-pointer-the-rest-3sum).
+- `int r = (int) v.size() - 1;` casts before subtracting, so empty input gives `-1` and the loop doesn't run. Correct.
+- **Interview polish:**
+  - Take `const vector<int>&`: the function only reads `v`. With `vector<int>&`, a braced list or a temporary can't be passed, so the harness needs a small `run` wrapper that copies into a local first (see [Copy or reference for a string parameter](#copy-or-reference-for-a-string-parameter), same rule).
+  - `v[l] + v[r]` is computed twice. Store `int sum = v[l] + v[r];` once. LeetCode's values are within ±1000, so `int` fits. Without a bound, sum in `long long` (see [Signed overflow](#signed-overflow-the-type-comes-from-the-operands)).
+  - `return vector({l + 1, r + 1});` can be `return {l + 1, r + 1};`, since the return type is already known.
+- Edge cases tested (all pass): the three LeetCode examples, the pair at both ends, at the end, at the start (negatives), equal values (`{0, 0, 3, 4}`, target `0`), no pair, a target that needs one element twice (`{3, 4, 5}`, target `6` → no pair), empty, and a single element. A random cross-check runs 5000 sorted arrays (length 0–15, values −10..10). Random arrays can have several valid pairs, so it checks that the returned indices are a valid pair (1-indexed, `i < j`, right sum), or that no pair exists when it returns `{-1, -1}`.
+
+### 12. Remove Duplicates from Sorted Array
+- **`removeDuplicates`:** `l` is the last kept value and `r` reads ahead. When `nums[l] != nums[r]`, `l++` and the new value goes to `nums[l]`. Returns `l + 1`. Empty input returns `0` first. This is the O(1)-space version suggested in the [Arrays & Hashing notes](../1-arrays_and_hashing/NOTES.md#26-remove-duplicates-from-sorted-array), with no hash set. See [Same-direction pointers on sorted input](#same-direction-pointers-on-sorted-input-dedupe).
+- **Interview polish:**
+  - `swap(nums[l], nums[r])` can be `nums[l] = nums[r]`. Only the first `l + 1` slots matter, so the swap's extra writes are wasted. Then `using std::swap;` and `<utility>` can go.
+  - `r < nums.size()` compares `int` with `size_t` (`-Wsign-compare`). Store `int n = nums.size();` once (see [`size() - 1` on an empty container](#size---1-on-an-empty-container)).
+  - `nums.size() == 0` reads better as `nums.empty()`.
+- Edge cases tested: empty, single element, two equal, two different, all the same, all unique, both LeetCode examples, duplicates at the start and at the end, runs of different lengths, negatives, and `INT_MIN` / `INT_MAX`. A random cross-check runs 5000 sorted arrays (length 0–20, values −5..5) against `std::unique`. The harness compares the first `k` elements, so a wrong `k` and a wrong prefix both fail.
+
+### 13. Trapping Rain Water
+- **`trapPrefixArrays`:** the forward pass stores the running max from the left in `maxGrid`. The backward pass keeps the running max from the right in `maxUntilNow`, sets `maxGrid[i]` to the smaller of the two, and adds `maxGrid[i] - heights[i]`. O(n) time, O(n) space. See [Water above a bar](#water-above-a-bar-trapping-rain-water).
+- **`trapTwoPointers`:** while `l <= r`, update `leftMax` with `heights[l]` and `rightMax` with `heights[r]`. If `heights[l] < heights[r]`, add `min(leftMax, rightMax) - heights[l]` and `l++`. Otherwise do the same for `r` and `r--`. O(n) time, O(1) space.
+- Both are correct, and the harness confirms it. Empty input works for both (`n = 0`, so neither pass runs; `r = -1`, so the `while` doesn't run).
+- **Why `min(leftMax, rightMax)` is safe, and also not needed:** when `heights[l] < heights[r]`, `leftMax <= rightMax` always holds. `leftMax` came from some earlier bar `l'`, and `l'` was passed only because a bar on the right at the time was **taller** than it, so `rightMax > h[l'] = leftMax`. The `else` side works the same way (on a tie, `r` moves, so it's `>=`). The `min` therefore always picks the moving side's own max, and `leftMax - heights[l]` alone is enough. Keeping the `min` isn't wrong, but be ready to explain why the moving side's max is enough. Or compare `leftMax <= rightMax` instead of the bars, which makes the proof one line.
+- **`l <= r` vs `l < r`:** both are correct. With `<=`, the bar where the pointers meet is processed once, and both maxes already include it, so it adds `>= 0`. With `<`, that bar is skipped. It's the tallest bar overall, because a pointer never leaves the tallest bar it has seen, so it holds no water anyway.
+- **Interview polish:**
+  - In `trapPrefixArrays`, filling `maxGrid` with `INT_MAX` and taking `min` in the **first** pass is redundant: `min(x, INT_MAX)` is just `x`. `vector<int> maxGrid(n);` with `maxGrid[i] = maxUntilNow;` says the same thing, and then `<climits>` can go.
+  - Overflow: LeetCode allows `n` ≤ 2·10⁴ and heights ≤ 10⁵, so the total water is below 2·10⁹, just under `INT_MAX` (≈ 2.147·10⁹). `int` fits, but only just. That's the bound to check out loud. With larger limits, sum in `long long` (see [Signed overflow](#signed-overflow-the-type-comes-from-the-operands)).
+- Edge cases tested (all pass): both LeetCode examples, empty, a single bar, two bars, all zeros, all equal, strictly increasing and strictly decreasing (no water), equal walls (`{2, 1, 2}`), unequal walls (`{5, 0, 3}`, capped by the shorter one), a flat pool, a valley, two pools between equal walls (`{3, 0, 3, 0, 3}`, so the tie branch runs), a bump inside a pool (`{5, 1, 3, 1, 5}`), and the tallest bar in the middle. A random cross-check runs 5000 arrays (length 0–20, heights 0–6) against an O(n²) version that finds both maxes for each bar.
