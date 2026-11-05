@@ -34,6 +34,5 @@ One entry per practice day, newest first. Links point to the quiz files, the pro
   - SW01 Contains Duplicate II (15 min, not optimal; set version learned).
   - SW03 Best Time to Buy and Sell Stock (8 min, solved alone).
 - **Process:**
-  - The Google L4 interview became the priority.
   - Long quizzes were replaced by flashcards.
   - The tracker was created.

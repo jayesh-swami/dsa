@@ -8,7 +8,7 @@ answer-all-parts,general,Answer every part of a multi-part question (interview f
 read-the-signature,general,Restate the problem and match the given signature (which argument is which) before coding,shaky,2026-11-05,2026-11-10,"SW06: swapped s1 and s2 vs LC 567, so the LC example returns false",../3-sliding-window/NOTES.md#6-permutation-in-string
 hash-patterns,arrays-hashing,"Hash set/map patterns: seen, count, group by canonical key",solid,2026-11-04,2026-11-18,Q1 2.1–2.3,../1-arrays_and_hashing/NOTES.md#hashing-patterns
 hash-table-design,arrays-hashing,"Hash table internals: chaining, linear probing, tombstones, prime size, load factor",solid,2026-10-17,2026-10-31,"Q1 2.5, 2.6, 9.4",../1-arrays_and_hashing/NOTES.md#designing-a-hash-table-collision-resolution
-anti-hash,arrays-hashing,Anti-hash hacks and a seeded custom hash (splitmix64),weak,2026-10-17,2026-10-19,Q1 2.7 gap. Low priority for Google,
+anti-hash,arrays-hashing,Anti-hash hacks and a seeded custom hash (splitmix64),weak,2026-10-17,2026-10-19,Q1 2.7 gap. Low priority for now,
 sequence-starts,arrays-hashing,Longest consecutive run: count only from run starts,solid,2026-10-17,2026-10-31,"Q1 1.4 (concept right, counterexample slip)",../1-arrays_and_hashing/NOTES.md#sequence-starts-longest-consecutive-run
 grid-box-indexing,arrays-hashing,Sudoku box index math,untested,2026-10-15,2026-10-15,,../1-arrays_and_hashing/NOTES.md#grid-boxes-sudoku-indexing
 boyer-moore,arrays-hashing,"Boyer-Moore voting, the n/k version and the verification pass",solid,2026-10-17,2026-10-31,Q1 section 5: 5.5/6,../1-arrays_and_hashing/NOTES.md#boyer-moore-voting-algorithm
@@ -48,7 +48,7 @@ cpp-operand-overflow,cpp,An expression's type comes from its operands; cast befo
 cpp-long-long-habit,cpp,long long for counts and sums out of habit (pairs ≈ n²/2),shaky,2026-11-05,2026-11-10,"Q1 P1, P2, P5; Q02 coding: chose long long and checked the 10⁹ bound",
 cpp-signed-overflow-ub,cpp,"Signed overflow is UB (abs(INT_MIN), INT_MIN + x)",weak,2026-10-17,2026-10-19,"Q1 9.8 blank, 4.3",../2-two-pointers/NOTES.md#signed-overflow-the-type-comes-from-the-operands
 cpp-priority-queue,cpp,"priority_queue: max-heap by default, min-heap syntax, pair ordering",weak,2026-10-17,2026-10-19,Q1 9.6 blank. Heap topic coming up,
-cpp-fast-io,cpp,"Fast I/O side effects (mixing printf, flushing)",weak,2026-10-17,2026-10-19,Q1 9.7 blank. Low priority for Google,
+cpp-fast-io,cpp,"Fast I/O side effects (mixing printf, flushing)",weak,2026-10-17,2026-10-19,Q1 9.7 blank. Low priority for now,
 cpp-modulo-negative,cpp,"% keeps the dividend's sign; normalise to [0, m)",solid,2026-10-17,2026-10-31,"Q1 2.4, 3.5",../1-arrays_and_hashing/NOTES.md#designing-a-hash-table-collision-resolution
 cpp-operator-bracket-inserts,cpp,operator[] on a map inserts missing keys,solid,2026-11-05,2026-11-19,Q1 2.1; Q02 8: counted the lookups right,../2-two-pointers/NOTES.md#operator-on-a-map-inserts-missing-keys
 cpp-hash-lookups,cpp,"One hash lookup instead of two (insert().second, find)",shaky,2026-11-05,2026-11-10,SW1 used contains + insert; Q02 7 right; 8 couldn't write find / it->second; SW04: used insert().second correctly,../3-sliding-window/NOTES.md#one-hash-lookup-instead-of-two

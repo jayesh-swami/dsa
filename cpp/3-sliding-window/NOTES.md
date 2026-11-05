@@ -45,13 +45,13 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 ## Window validity as a count (Character Replacement)
 - "Can this window become all one letter with at most `k` replacements?" Keep the **most frequent** letter and replace everything else, so the cost is `len - maxFreq`. The window is valid when `len - maxFreq <= k`.
 - Look for the single number that decides validity before writing a check that tries every option. Trying every letter as the one to keep (26 × 26 per check) gives the same answer, because the minimum over all letters is the most frequent one.
-- `maxFreq` over a 26-entry count array is an O(26) scan, so the whole solution is O(26·n). That's fine at L4.
+- `maxFreq` over a 26-entry count array is an O(26) scan, so the whole solution is O(26·n). That's fine in an interview.
 - **Follow-up (O(n)):** keep `maxFreq` as a running max that **never decreases** when `l` moves. A stale, too-high `maxFreq` can only keep the window at its current size; it never records a longer invalid window. The answer only grows when a real higher frequency appears. Know the argument; you don't need to lead with it.
 - Since the window never needs to shrink below the best length seen, `if` can replace `while` for the shrink (move `l` once per step). The window then slides at the best size instead of shrinking.
 
 ## Fixed window with count arrays (anagrams and permutations)
 - "Does the text contain a permutation (anagram) of the pattern?" The window is fixed at the pattern's length. Keep a count array for the pattern and one for the window; slide by adding `text[i]` and removing `text[i - k]`.
-- Comparing the two arrays is O(26) per step, so O(26·n) overall. That's fine at L4.
+- Comparing the two arrays is O(26) per step, so O(26·n) overall. That's fine in an interview.
 - `vector<int>` (and `array<int, 26>`) has `==` that compares element by element, so `if (winCount == patCount)` replaces a hand-written helper loop.
 - **Follow-up (O(n)):** keep `matches`, the number of letters whose counts agree. When a count changes, check whether that letter stopped or started matching, and return when `matches == 26`.
 - Same pattern: Find All Anagrams in a String (LC 438), which collects every start index instead of returning early.
@@ -88,7 +88,7 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 Harnesses are skipped while preparing for the interview. Solutions are checked on LeetCode instead.
 
 ### 1. Contains Duplicate II
-- **Time taken:** the hash-map and naive versions took 15 minutes. The set version was learned after reading the approach. At L4, aim for about 10 minutes on an easy, and reach the best approach without help.
+- **Time taken:** the hash-map and naive versions took 15 minutes. The set version was learned after reading the approach. Aim for about 10 minutes on an easy, and reach the best approach without help.
 - **`containsDuplicateNaive`:** for each gap `i` from 1 to `k`, compare `nums[j]` with `nums[j - i]`. O(n·k) time, O(1) space. When `k >= n`, the extra gaps just do nothing.
 - **`containsDuplicateHashMap`:** maps each value to the index where it was last seen, and returns `true` when `i - mp[n] <= k`. O(n) time, O(n) space. `mp.contains(n)` followed by `mp[n]` looks the key up twice; a single `find` does it once (see [One hash lookup instead of two](#one-hash-lookup-instead-of-two)).
 - **`containsDuplicateSpaceOptimized`:** the set holds the last `k` values. O(n) time, O(min(n, k)) space. See [Fixed window with a set](#fixed-window-with-a-set-within-distance-k).
