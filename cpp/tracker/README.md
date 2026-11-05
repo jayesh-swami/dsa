@@ -7,6 +7,7 @@ Three CSV tables track what I've practised and where I'm weak. GitHub shows them
 | [concepts.csv](concepts.csv) | Concept (a pattern, technique or C++ point) | How strong am I on it, when did I last practise it, when is it due again |
 | [problems.csv](problems.csv) | Problem solved | Which concepts it uses, how long it took, whether I found the approach myself |
 | [quizzes.csv](quizzes.csv) | Quiz | Which concepts it tested, and which I got right, partly right or wrong |
+| [log.md](log.md) | Practice day | What I did that day: quiz, concepts revised, problems, what's next |
 
 `concepts` is a `;`-separated list of concept ids in both `problems.csv` and `quizzes.csv`.
 
@@ -33,6 +34,7 @@ Three CSV tables track what I've practised and where I'm weak. GitHub shows them
 
 - About 10 cards, each a one-line question with a one-line answer (definitions, "which pattern?", complexities, C++ gotchas), taking 5–10 minutes. Sometimes one coding question goes in between the cards. They live in `cpp/quizzes/flashcards/`, named `qNN_YYYY-MM-DD.md`.
 - Cards come from `python3 tracker.py due`, weakest first, plus the topic in progress.
+- **Every quiz has at least one trace card** (`trace-literally`): a small algorithm of 5–15 lines with concrete input, where the answer is the exact output or the final values. Pick code where intent and arithmetic differ: off-by-one bounds, `i - k` indices, integer division, a `max` that doesn't fire, unsigned `size()`, a stale counter. Do it on paper, line by line, without running it.
 - Grading goes inline in the same file: a score summary at the top, and a ✅ / 🟡 / ❌ note under each answer.
 - After grading:
   1. Add a row to `quizzes.csv`.

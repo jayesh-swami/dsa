@@ -49,6 +49,13 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - **Follow-up (O(n)):** keep `maxFreq` as a running max that **never decreases** when `l` moves. A stale, too-high `maxFreq` can only keep the window at its current size; it never records a longer invalid window. The answer only grows when a real higher frequency appears. Know the argument; you don't need to lead with it.
 - Since the window never needs to shrink below the best length seen, `if` can replace `while` for the shrink (move `l` once per step). The window then slides at the best size instead of shrinking.
 
+## Fixed window with count arrays (anagrams and permutations)
+- "Does the text contain a permutation (anagram) of the pattern?" The window is fixed at the pattern's length. Keep a count array for the pattern and one for the window; slide by adding `text[i]` and removing `text[i - k]`.
+- Comparing the two arrays is O(26) per step, so O(26·n) overall. That's fine at L4.
+- `vector<int>` (and `array<int, 26>`) has `==` that compares element by element, so `if (winCount == patCount)` replaces a hand-written helper loop.
+- **Follow-up (O(n)):** keep `matches`, the number of letters whose counts agree. When a count changes, check whether that letter stopped or started matching, and return when `matches == 26`.
+- Same pattern: Find All Anagrams in a String (LC 438), which collects every start index instead of returning early.
+
 ## One hash lookup instead of two
 - `s.insert(x)` returns a `pair<iterator, bool>`, where `.second` is `false` if `x` was already in the set. `if (!s.insert(x).second) return true;` checks and inserts with one hash operation instead of two (`contains`, then `insert`).
 - On a map, `mp.contains(n)` followed by `mp[n]` also looks the key up twice. `find` returns an iterator to a `pair<const Key, Value>`, so the value is `it->second`:
@@ -76,6 +83,7 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 | 3 | Best Time to Buy and Sell Stock | [best_time_to_buy_sell_stock.cpp](best_time_to_buy_sell_stock.cpp) | Keep the minimum price so far; the best profit is `max(p - minSoFar)` | O(n) | O(1) |
 | 4 | Longest Substring Without Repeating Characters | [longest_substr_without_rep_chars.cpp](longest_substr_without_rep_chars.cpp) | Set window: grow while the char is new, else erase from `l` until it is. Optimal: last index per char, `l = max(l, last[c] + 1)` | O(n) | O(min(n, 128)) |
 | 5 | Longest Repeating Character Replacement | [longest_repeating_char_replacement.cpp](longest_repeating_char_replacement.cpp) | Count array; the window is valid when `len - maxFreq <= k`; shrink `l` while invalid. Optimal: running `maxFreq` that never decreases. (Also one window per target letter) | O(n) | O(26) |
+| 6 | Permutation in String | [permutation_of_string.cpp](permutation_of_string.cpp) | Fixed window of the pattern's length with 26-entry count arrays; compare with `==`. Optimal: a `matches` counter of letters that agree, updated per change | O(n) | O(26) |
 
 Harnesses are skipped while preparing for the interview. Solutions are checked on LeetCode instead.
 
@@ -128,3 +136,12 @@ Harnesses are skipped while preparing for the interview. Solutions are checked o
   - **Why `maxf` never has to decrease:** the answer only grows when a window has `len - maxf <= k` with a **larger** `len`, and that needs a real frequency above the old `maxf`. A stale, too-high `maxf` only lets the window slide at its current size; it never records a longer one. Be ready to say this in two sentences. It's the part interviewers ask about.
   - Use `vector<int>(26)` instead of `unordered_map<char, int>`: the input is uppercase letters only. `maxf = max(maxf, ++count[s[r] - 'A'])` does the increment and the read in one step.
 - **`string&` parameters:** both new functions take a non-const `string&`. They only read `s`, so use `const string&`. This is the 4th time the parameter-type slip has come up.
+
+### 6. Permutation in String
+- **Time taken:** under 20 minutes, found alone. Inside the target for a medium.
+- **`checkInclusion`:** count arrays for the pattern and the first window, compare with `==`, then slide one step at a time. Correct, O(26·n) time, O(26) space.
+- **`checkInclusionOpti` (`matches` counter):** counts how many of the 26 letters agree. When one count changes, it goes up if the letter now matches, and down if it matched just before the change. It checks at the top of each step and once more after the loop for the last window. Correct, O(n + 26) time, O(26) space.
+- Both versions agree with a brute force on 50,000 random cases.
+- **Argument order:** both functions treat `s1` as the text and `s2` as the pattern. LC 567 says the opposite ("return true if `s2` contains a permutation of `s1`"), so `checkInclusion("ab", "eidbaooo")` returns `false` where LeetCode expects `true`. That's fine as a deliberate variant, but before coding in an interview, restate which argument is which.
+- `const string&` and `const vector<int>&` are used throughout. That's the parameter habit fixed.
+- **Traces:** the first columns are snapshots and the last column is updated in place, which is quicker to write. Both are right: `"clear"` / `"aer"` returns at `i = 4` on the window `"ear"`, and `"abec"` / `"ce"` ends with `matches: 26`. Worth knowing for the explanation: right after the first-window count, `matches` is **22**, not 0, because the 22 letters missing from both strings already match at `0 == 0`. That's why the target is 26 and not the number of distinct letters.
