@@ -1,0 +1,45 @@
+id,topic,problem,leetcode,difficulty,file,concepts,date,minutes,outcome,revisit,notes
+AH01,arrays-hashing,Concatenation of Array,1929,Easy,../1-arrays_and_hashing/concatenation_of_array.cpp,,2026-10-06,,unknown,,
+AH02,arrays-hashing,Contains Duplicate,217,Easy,../1-arrays_and_hashing/contains_duplicates.cpp,hash-patterns,2026-10-06,,unknown,,
+AH03,arrays-hashing,Valid Anagram,242,Easy,../1-arrays_and_hashing/is_anagram.cpp,hash-patterns,2026-10-06,,unknown,,
+AH04,arrays-hashing,Two Sum,1,Easy,../1-arrays_and_hashing/two_sum.cpp,hash-patterns,2026-10-06,,unknown,,
+AH05,arrays-hashing,Longest Common Prefix,14,Easy,../1-arrays_and_hashing/longest_common_prefix.cpp,,2026-10-06,,unknown,,
+AH06,arrays-hashing,Group Anagrams,49,Medium,../1-arrays_and_hashing/group_anagrams.cpp,hash-patterns;std-move,2026-10-07,,unknown,,
+AH07,arrays-hashing,Remove Element,27,Easy,../1-arrays_and_hashing/remove_element.cpp,read-write-pointers,2026-10-07,,unknown,,
+AH08,arrays-hashing,Majority Element,169,Easy,../1-arrays_and_hashing/majority_element.cpp,boyer-moore;hash-patterns,2026-10-07,,unknown,,
+AH09,arrays-hashing,Design HashSet,705,Easy,../1-arrays_and_hashing/design_hashset.cpp,hash-table-design;cpp-modulo-negative,2026-10-13,,unknown,,
+AH10,arrays-hashing,Design HashMap,706,Easy,../1-arrays_and_hashing/design_hashmap.cpp,hash-table-design;cpp-vector-vs-list,2026-10-13,,unknown,,
+AH11,arrays-hashing,Maximum Subarray,53,Medium,../1-arrays_and_hashing/max_subarray_sum.cpp,kadane,2026-10-13,,unknown,yes,Kadane is a weak concept (Q1)
+AH12,arrays-hashing,"Sort an Array (bubble, merge, quick)",912,Medium,../1-arrays_and_hashing/sorting_algos.cpp,sorting-algos,2026-10-13,,unknown,,
+AH13,arrays-hashing,Sort Colors,75,Medium,../1-arrays_and_hashing/sort_colors.cpp,counting-bucket-sort,2026-10-14,,unknown,,
+AH14,arrays-hashing,Top K Frequent Elements,347,Medium,../1-arrays_and_hashing/top_k_frequent_elements.cpp,top-k;counting-bucket-sort;hash-patterns,2026-10-14,,unknown,,
+AH15,arrays-hashing,Encode and Decode Strings,271,Medium,../1-arrays_and_hashing/encode_decode_string.cpp,length-prefix-encoding,2026-10-15,,unknown,,
+AH16,arrays-hashing,Range Sum Query 2D - Immutable,304,Medium,../1-arrays_and_hashing/range_sum_2d_query.cpp,prefix-sums,2026-10-15,,unknown,,
+AH17,arrays-hashing,Product of Array Except Self,238,Medium,../1-arrays_and_hashing/product_of_array_except_self.cpp,prefix-suffix-products,2026-10-15,,unknown,,
+AH18,arrays-hashing,Valid Sudoku,36,Medium,../1-arrays_and_hashing/valid_sudoku.cpp,grid-box-indexing;hash-patterns,2026-10-15,,unknown,,
+AH19,arrays-hashing,Longest Consecutive Sequence,128,Medium,../1-arrays_and_hashing/longest_consecutive_seq.cpp,sequence-starts;hash-patterns,2026-10-15,,unknown,,
+AH20,arrays-hashing,Best Time to Buy and Sell Stock II,122,Medium,../1-arrays_and_hashing/best_time_to_buy_and_sell_stock_2.cpp,greedy-positive-diffs;monotonic-stack,2026-10-17,,unknown,yes,Redo the monotonic-stack version before the stack topic
+AH21,arrays-hashing,Majority Element II,229,Medium,../1-arrays_and_hashing/majority_element_2.cpp,boyer-moore,2026-10-17,,unknown,,
+AH22,arrays-hashing,Subarray Sum Equals K,560,Medium,../1-arrays_and_hashing/subarray_sum_equal_k.cpp,prefix-sum-hashmap,2026-10-17,,unknown,,
+AH23,arrays-hashing,First Missing Positive,41,Hard,../1-arrays_and_hashing/first_missing_positive.cpp,sign-marking;cyclic-sort,2026-10-17,,unknown,yes,Sign marking was a Q1 gap
+AH24,arrays-hashing,Contiguous Array,525,Medium,../1-arrays_and_hashing/binary_array.cpp,prefix-sum-hashmap,2026-10-17,,unknown,,
+AH25,arrays-hashing,Range Addition,370,Medium,../1-arrays_and_hashing/queries_to_add_v_every_element.cpp,difference-array,2026-10-17,,unknown,,
+AH26,arrays-hashing,Remove Duplicates from Sorted Array (hash set),26,Easy,../1-arrays_and_hashing/remove_duplicates.cpp,read-write-pointers;hash-patterns,2026-10-17,,unknown,,Used a hash set; the 'sorted' hint makes it O(1) space (see TP12)
+TP01,two-pointers,Reverse String,344,Easy,../2-two-pointers/reverse_string.cpp,tp-converging,2026-10-18,,unknown,,
+TP02,two-pointers,Valid Palindrome,125,Easy,../2-two-pointers/valid_palindrome.cpp,tp-converging;tp-skip-in-loop;cpp-cctype;cpp-references,2026-10-18,,unknown,,
+TP03,two-pointers,Valid Palindrome II,680,Easy,../2-two-pointers/valid_palindrome_with_deletion.cpp,tp-branch-mismatch;tp-converging,2026-10-18,,unknown,,
+TP04,two-pointers,Merge Strings Alternately,1768,Easy,../2-two-pointers/merge_alt_string.cpp,tp-merge;cpp-references;cpp-unsigned-size,2026-10-27,,unknown,,
+TP05,two-pointers,Merge Sorted Array,88,Easy,../2-two-pointers/merge_sorted_array.cpp,tp-merge-from-back;cpp-adl-swap,2026-10-27,,unknown,,
+TP06,two-pointers,3Sum,15,Medium,../2-two-pointers/3_sum.cpp,tp-ksum;sorted-input-hint;cpp-operand-overflow,2026-10-27,,unknown,,
+TP07,two-pointers,4Sum,18,Medium,../2-two-pointers/4_sum.cpp,tp-ksum;tp-take-out-put-back;cpp-operand-overflow;cpp-operator-bracket-inserts;cpp-vector-vs-list,2026-10-27,,unknown,yes,The first two-pointer attempt didn't justify discarding a side
+TP08,two-pointers,Rotate Array,189,Medium,../2-two-pointers/rotate_array.cpp,tp-rotate;cpp-cache-access;cpp-stl-helpers,2026-11-03,,unknown,,
+TP09,two-pointers,Container With Most Water,11,Medium,../2-two-pointers/max_area.cpp,tp-discard-side;tp-converging,2026-11-03,,unknown,,
+TP10,two-pointers,Boats to Save People,881,Medium,../2-two-pointers/boats_to_save_people.cpp,tp-greedy-pairing;counting-bucket-sort,2026-11-03,,unknown,,
+TP11,two-pointers,Two Sum II - Input Array Is Sorted,167,Medium,../2-two-pointers/2_integere_sum.cpp,tp-converging;sorted-input-hint,2026-10-27,,unknown,,
+TP12,two-pointers,Remove Duplicates from Sorted Array (pointers),26,Easy,../2-two-pointers/remove_duplicates.cpp,read-write-pointers;sorted-input-hint,2026-10-27,,unknown,,
+TP13,two-pointers,Trapping Rain Water,42,Hard,../2-two-pointers/trapping_rain_water.cpp,tp-trapping-water;tp-converging,2026-11-03,,unknown,,
+SW01,sliding-window,Contains Duplicate II,219,Easy,../3-sliding-window/contains_duplicate.cpp,sw-fixed-set;sw-basics;hash-patterns;cpp-hash-lookups,2026-11-04,15,suboptimal,yes,"Map and naive versions solo in 15 min; the O(min(n, k)) set version was learned from the solution"
+SW02,sliding-window,Maximum Average Subarray I,643,Easy,../quizzes/flashcards/q02_2026-11-05.md,sw-basics;cpp-long-long-habit;cpp-operand-overflow,2026-11-05,,solo,,Written in Q02 without compiling; correct first time. Start from the first window's sum instead of INT_MIN
+SW03,sliding-window,Best Time to Buy and Sell Stock,121,Easy,../3-sliding-window/best_time_to_buy_sell_stock.cpp,greedy-positive-diffs,2026-11-04,8,solo,,Correct. Start minUntilNow from prices[0] instead of INT_MAX / 2
+SW04,sliding-window,Longest Substring Without Repeating Characters,3,Medium,../3-sliding-window/longest_substr_without_rep_chars.cpp,sw-basics;sw-jump-last-index;cpp-hash-lookups;cpp-references;hand-tracing,2026-11-05,20,solo,,Set version (O(n)) solo; jump version learned from the solution. Take const string&
+SW05,sliding-window,Longest Repeating Character Replacement,424,Medium,../3-sliding-window/longest_repeating_char_replacement.cpp,sw-basics;sw-validity-count;hand-tracing,2026-11-05,50,suboptimal,yes,"1st: 50 min, O(26²·n) check. 2nd (after a break): per-letter O(m·n) window, then O(n) running maxf learned from the solution. All 3 agree on 20k random tests. Redo from scratch in 2 days; explain why maxf never decreases"

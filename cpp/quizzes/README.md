@@ -5,3 +5,5 @@ One folder per topic, matching the topic folders in `cpp/`. Each holds the quiz 
 | # | Topic | Quiz (my answers) | Graded | Date |
 |---|-------|-------------------|--------|------|
 | 1 | Arrays & Hashing | [Quiz](1-arrays_and_hashing/01_arrays_and_hashing.md) | [Graded](1-arrays_and_hashing/01_arrays_and_hashing_graded.md) · [Assessment notes](1-arrays_and_hashing/01_arrays_and_hashing_graded.md#assessment-notes-for-future-quizzes) | 2026-10-17 |
+
+Flashcard quizzes go in `flashcards/` and are logged in the [tracker](../tracker/README.md).
