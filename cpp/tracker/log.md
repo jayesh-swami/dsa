@@ -20,7 +20,7 @@ One entry per practice day, newest first. Links point to the quiz files, the pro
 
 ## 2026-11-12
 
-- **Contest:** Codeforces Round 1134 (Div. 4), [contest folder](../../contests/codeforces/2290-round_1134_div4/). A, B, C, E accepted in the contest. Then upsolved D and F with hints.
+- **Contest:** Codeforces Round 1134 (Div. 4), [contest folder](../../contests/codeforces/2290-round_1134_div4/). A, B, C accepted in the contest (3 solved, rank 9199, rating +269 to 708). E got TLE in the contest and was accepted just after it ended. Then upsolved D and F with hints.
 - **Problems:**
 
   | id | Problem | Outcome |
@@ -29,7 +29,7 @@ One entry per practice day, newest first. Links point to the quiz files, the pro
   | CF2290B | Stubborn Pen | Accepted in contest |
   | CF2290C | Books on a Shelf | Accepted in contest |
   | CF2290D | Letters Down | Upsolved with hints (union of half-open letter ranges); marked to redo |
-  | CF2290E | Avalanche | Accepted in contest |
+  | CF2290E | Avalanche | TLE in contest (O(n·k)); accepted just after it ended with an O(n) running sum |
   | CF2290F | Value Counters | Upsolved with hints (`pos_x = b_x + n - x`), accepted; marked to redo |
   | CF2290G | Lakeside Trail | Unfinished in contest; upsolve pending |
 
@@ -40,6 +40,7 @@ One entry per practice day, newest first. Links point to the quiz files, the pro
 - **Takeaways:**
   - Contest problems from C onward reward one key observation more than a known pattern. Keep interview-style problems as the main track and do about one contest a week, upsolving one or two past the last solved.
   - My first idea for D and F was a graph or topo sort; both were counting arguments.
+  - E cost a solve: O(n·k) got TLE. Check the complexity against the limits before submitting, not after the verdict.
 - **Next:**
   - Upsolve G1/G2.
   - Redo D and F from scratch in 2 days.
