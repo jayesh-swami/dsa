@@ -2,6 +2,22 @@
 
 One entry per practice day, newest first. Links point to the quiz files, the problem rows in [problems.csv](problems.csv) and the notes. Strength and review dates live in [concepts.csv](concepts.csv); this is only a record of what was done.
 
+## 2026-11-13
+
+- **Quiz:** [Q03 mixed flashcards](../quizzes/flashcards/q03_2026-11-13.md): 7 / 9. The trace card was exact. 5 of 6 two-part cards were answered in full. Missed: 4 (formula right, derivation steps skipped), 8(b) (Kadane update not fixed), 9 (fast I/O, not known).
+- **Revised:** how C++ I/O works (syscalls, buffers, flushing, `sync_with_stdio`, `tie`, interactive problems). New [contest notes](../../contests/NOTES.md#fast-io-buffers-flushing-and-the-os).
+- **Problems:**
+
+  | id | Problem | Outcome |
+  |---|---|---|
+  | CF2290G1 / G2 | Lakeside Trail | Upsolved with hints (binary search on D, the tent formula); found the O(n) two-pass check alone after one counterexample. Same code accepted for both; marked to redo |
+
+- **New or changed concepts:**
+  - New: `binary-search-on-answer` (weak), `slope-limit-two-pass` (shaky). Both are in the [contest notes](../../contests/NOTES.md).
+  - Up a level: `sw-jump-last-index`, `sw-validity-count`, `interval-union-small-alphabet`, `cpp-priority-queue` (to shaky); `trace-literally`, `hand-tracing`, `cpp-operand-overflow` (to solid).
+  - Partly right, now shaky: `count-split-identity`, `kadane`, `cpp-signed-overflow-ub`, `answer-all-parts`.
+  - Wrong: `cpp-fast-io` (stays weak).
+
 ## 2026-11-12
 
 - **Contest:** Codeforces Round 1134 (Div. 4), [contest folder](../../contests/codeforces/2290-round_1134_div4/). A, B, C, E accepted in the contest. Then upsolved D and F with hints.
@@ -27,6 +43,7 @@ One entry per practice day, newest first. Links point to the quiz files, the pro
 - **Next:**
   - Upsolve G1/G2.
   - Redo D and F from scratch in 2 days.
+  - Div. 2 round on 2026-11-15: aim for A and B, upsolve C afterwards.
 
 ## 2026-11-05
 
