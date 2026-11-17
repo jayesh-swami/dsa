@@ -2,6 +2,29 @@
 
 One entry per practice day, newest first. Links point to the quiz files, the problem rows in [problems.csv](problems.csv) and the notes. Strength and review dates live in [concepts.csv](concepts.csv); this is only a record of what was done.
 
+## 2026-11-17
+
+- **Plan:** new problems now come from the Blind 75, then the rest of the NeetCode 150, then harder ones. The list is in [blind75.csv](blind75.csv); `python3 tracker.py list` shows progress by topic from `problems.csv`. 15 / 75 done at the start.
+- **Process:** problems are solved in the NeetCode IDE to save setup time; the solution is pasted and saved to the topic folder afterwards.
+- **Problems:**
+
+  | id | Problem | Outcome |
+  |---|---|---|
+  | SW07 | Minimum Window Substring | 30 min. Shrink-while-valid window found alone. TLE first (full hash-map scan per step); accepted with 128-arrays after being told why. Then wrote the O(n) have/need counter after an explanation, correct first time. Marked to redo |
+  | ST01 | Valid Parentheses | Solved alone in about 5 min, correct |
+  | LL01 | Reverse Linked List | Solved alone in 2 min (iterative), then the recursive version; first wrote `curr.next` on a pointer |
+  | LL02 | Merge Two Sorted Lists | Solved alone in about 5 min; dummy head on the stack. Leftover list first attached with loops, then rewritten as one assignment |
+  | LL03 | Linked List Cycle | Solved alone in about 5 min (fast and slow pointers), O(1) space |
+  | LL04 | Reorder List | Solved alone in 15 min: split, reverse the second half, merge alternately. Middle first by counting the length, then rewritten with fast and slow |
+  | LL05 | Remove Nth Node From End of List | 10 min. Two passes alone; the one-pass gap version after guiding questions, correct. Marked to redo |
+  | LL06 | Merge k Sorted Lists | Solved alone in 20 min with a min-heap; all three approaches' complexities right before coding |
+
+- **New or changed concepts:** new `sw-min-window` (shaky), `stack-matching`, `cpp-stack-api`, `ll-reverse`, `ll-dummy-head`, `ll-split-reverse-merge`, `ll-gap-pointers`, `ll-merge-k`, `cpp-object-init` (untested), `ll-fast-slow` (shaky: the "why they meet" argument was missing), `cpp-arrow-vs-dot` (shaky). New [stack](../4-stack/NOTES.md) and [linked list](../6-linked-list/NOTES.md) notes. Evidence added to `constraints-to-complexity` (a helper hid an O(k) loop) and `cpp-references`.
+- **Next:**
+  - Next quiz must include a card on fast and slow pointers: why they're guaranteed to meet, and why speed 3 can fail (asked for explicitly).
+  - Redo SW07 (Minimum Window Substring) from scratch with the have/need counter on 2026-11-19.
+  - Binary search: Find Minimum in Rotated Sorted Array, Search in Rotated Sorted Array.
+
 ## 2026-11-13
 
 - **Quiz:** [Q03 mixed flashcards](../quizzes/flashcards/q03_2026-11-13.md): 7 / 9. The trace card was exact. 5 of 6 two-part cards were answered in full. Missed: 4 (formula right, derivation steps skipped), 8(b) (Kadane update not fixed), 9 (fast I/O, not known).

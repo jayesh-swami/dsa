@@ -56,6 +56,17 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 - **Follow-up (O(n)):** keep `matches`, the number of letters whose counts agree. When a count changes, check whether that letter stopped or started matching, and return when `matches == 26`.
 - Same pattern: Find All Anagrams in a String (LC 438), which collects every start index instead of returning early.
 
+## Minimum window: shrink while valid (Minimum Window Substring)
+- "Shortest window that contains X": grow `r` every step. **While** the window is valid, record it, then remove `s[l]` and move `l` forward. Longest-window problems are the other way round: shrink while **invalid**, then record.
+- **Make validity O(1).** Rescanning a count table on every step costs O(k) for each of about 2n checks, so O(n·k) in total. Through an `unordered_map` that's ~10⁷ hash lookups, enough to TLE. Keep a counter instead (the same idea as `matches` in [Permutation in String](#fixed-window-with-count-arrays-anagrams-and-permutations)):
+  - `need` = number of distinct chars in `t`, `have` = how many of them currently have `win[c] >= cnt[c]`.
+  - Add `c`: `if (++win[c] == cnt[c]) have++;` (only when it **reaches** the target).
+  - Remove `c`: `if (win[c]-- == cnt[c]) have--;` (only when it **drops below** the target).
+  - Valid ⇔ `have == need`.
+- Record `(start, len)`, not `s.substr(...)`: `substr` copies the window on every improvement. Call it once at the end.
+- Chars as indices: `int cnt[128]`, indexed by the char itself. No `- 'A'` offset needed, and an offset goes negative for any char below `'A'`.
+- A helper that "looks O(1)" can hide a loop. When you state the complexity, count what each call costs.
+
 ## One hash lookup instead of two
 - `s.insert(x)` returns a `pair<iterator, bool>`, where `.second` is `false` if `x` was already in the set. `if (!s.insert(x).second) return true;` checks and inserts with one hash operation instead of two (`contains`, then `insert`).
 - On a map, `mp.contains(n)` followed by `mp[n]` also looks the key up twice. `find` returns an iterator to a `pair<const Key, Value>`, so the value is `it->second`:
@@ -84,6 +95,7 @@ The concepts come first, for a quick revision. The problem-by-problem notes are 
 | 4 | Longest Substring Without Repeating Characters | [longest_substr_without_rep_chars.cpp](longest_substr_without_rep_chars.cpp) | Set window: grow while the char is new, else erase from `l` until it is. Optimal: last index per char, `l = max(l, last[c] + 1)` | O(n) | O(min(n, 128)) |
 | 5 | Longest Repeating Character Replacement | [longest_repeating_char_replacement.cpp](longest_repeating_char_replacement.cpp) | Count array; the window is valid when `len - maxFreq <= k`; shrink `l` while invalid. Optimal: running `maxFreq` that never decreases. (Also one window per target letter) | O(n) | O(26) |
 | 6 | Permutation in String | [permutation_of_string.cpp](permutation_of_string.cpp) | Fixed window of the pattern's length with 26-entry count arrays; compare with `==`. Optimal: a `matches` counter of letters that agree, updated per change | O(n) | O(26) |
+| 7 | Minimum Window Substring | [minimum_window_substring.cpp](minimum_window_substring.cpp) | Grow `r`; while every count of `t` is covered, record and shrink `l`. `have`/`need` counter makes validity O(1). (Also a 128-count rescan per check, O(128·n)) | O(n) | O(128) |
 
 Harnesses are skipped while preparing for the interview. Solutions are checked on LeetCode instead.
 
@@ -145,3 +157,16 @@ Harnesses are skipped while preparing for the interview. Solutions are checked o
 - **Argument order:** both functions treat `s1` as the text and `s2` as the pattern. LC 567 says the opposite ("return true if `s2` contains a permutation of `s1`"), so `checkInclusion("ab", "eidbaooo")` returns `false` where LeetCode expects `true`. That's fine as a deliberate variant, but before coding in an interview, restate which argument is which.
 - `const string&` and `const vector<int>&` are used throughout. That's the parameter habit fixed.
 - **Traces:** the first columns are snapshots and the last column is updated in place, which is quicker to write. Both are right: `"clear"` / `"aer"` returns at `i = 4` on the window `"ear"`, and `"abec"` / `"ce"` ends with `matches: 26`. Worth knowing for the explanation: right after the first-window count, `matches` is **22**, not 0, because the 22 letters missing from both strings already match at `0 == 0`. That's why the target is 26 and not the number of distinct letters.
+
+### 7. Minimum Window Substring
+- Solved in the NeetCode IDE. The shrink-while-valid loop was found alone.
+- **First version (TLE):** `unordered_map` counts and a `validWindow` that loops over every key of `t` on every step. It looked O(n) but was O(n·k) with hashing on top, about 10⁷ hash lookups at n = 10⁵. `res = s.substr(...)` also copied the window on every improvement. See [Minimum window](#minimum-window-shrink-while-valid-minimum-window-substring).
+- **`minWindowScan` (first accepted):** 128-int count arrays and `(resL, resR)` with one `substr` at the end. Still a full 128-scan per check, so O(128·n).
+- **`minWindow` (O(n), after the counter was explained):** `need` = distinct chars of `t`; `have++` when `sc[c]` reaches `tc[c]`, `have--` just before it drops below; shrink `while (have == need)`. Correct first time, including checking before the decrement on removal.
+  - The `tc[idx] &&` guards aren't needed: after `++` a count is at least 1, so it never equals a target of 0, and on removal a char in the window has count ≥ 1. Harmless.
+  - `for (int i = 0; i < tc.size(); i++)` compares `int` with `size_t` (the other loop has the cast).
+  - **Redo from scratch** in 2 days, writing the counter without looking.
+- `tc[c - 'A']` in a 128-sized array: the offset isn't needed, and it would index negatively for a digit or a space. Use `tc[c]`.
+- In `minWindowScan`, `if (!validWindow(...)) continue; else { while (validWindow(...)) ... }`: the `while` already checks, so the `if` is one wasted scan per step. `l <= r` is always true there too (`t` is non-empty).
+- `resR == s.size() + 1` compares `int` with `size_t` (sign-compare warning). A `bestLen = INT_MAX` sentinel reads more clearly.
+- `validWindow` only reads its arrays: take `const vector<int>&`. `for (char& c : t)` only reads too: `char c`.

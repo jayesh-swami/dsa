@@ -8,6 +8,7 @@ Three CSV tables track what I've practised and where I'm weak. GitHub shows them
 | [problems.csv](problems.csv) | Problem solved | Which concepts it uses, how long it took, whether I found the approach myself |
 | [quizzes.csv](quizzes.csv) | Quiz | Which concepts it tested, and which I got right, partly right or wrong |
 | [log.md](log.md) | Practice day | What I did that day: quiz, concepts revised, problems, what's next |
+| [blind75.csv](blind75.csv) | Problem on the Blind 75 list, grouped by topic in roadmap order | What's left. Progress is read from `problems.csv` by LeetCode number, so nothing is ticked off by hand |
 
 `concepts` is a `;`-separated list of concept ids in both `problems.csv` and `quizzes.csv`.
 
@@ -46,4 +47,5 @@ Three CSV tables track what I've practised and where I'm weak. GitHub shows them
 ```
 python3 tracker.py update   # recompute last_practiced and next_review
 python3 tracker.py due      # list concepts due for review, weakest first
+python3 tracker.py list     # Blind 75 progress by topic, and the next problems
 ```

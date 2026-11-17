@@ -2,6 +2,7 @@
 
     python3 tracker.py update   # recompute last_practiced and next_review
     python3 tracker.py due      # concepts due for review, weakest first
+    python3 tracker.py list     # Blind 75 progress by topic, and what's next
 """
 import csv
 import sys
@@ -63,5 +64,20 @@ def due():
     print(f"\n{len(rows)} due.")
 
 
+def list75(count=5):
+    done = {p["leetcode"] for p in read("problems.csv") if p["leetcode"]}
+    rows = read("blind75.csv")
+    topics = {}
+    for r in rows:
+        topics.setdefault(r["topic"], []).append(r)
+    for topic, rs in topics.items():
+        n = sum(r["leetcode"] in done for r in rs)
+        print(f"{topic:18} {n:2} / {len(rs):2}  {'#' * n}{'.' * (len(rs) - n)}")
+    total = sum(r["leetcode"] in done for r in rows)
+    print(f"\n{total} / {len(rows)} done. Next:")
+    for r in [r for r in rows if r["leetcode"] not in done][:count]:
+        print(f"  {r['topic']:18} LC {r['leetcode']:>4}  {r['difficulty']:6}  {r['problem']}")
+
+
 if __name__ == "__main__":
-    {"update": update, "due": due}[sys.argv[1] if len(sys.argv) > 1 else "due"]()
+    {"update": update, "due": due, "list": list75}[sys.argv[1] if len(sys.argv) > 1 else "due"]()

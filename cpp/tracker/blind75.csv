@@ -1,0 +1,76 @@
+n,topic,problem,leetcode,difficulty
+1,arrays-hashing,Contains Duplicate,217,Easy
+2,arrays-hashing,Valid Anagram,242,Easy
+3,arrays-hashing,Two Sum,1,Easy
+4,arrays-hashing,Group Anagrams,49,Medium
+5,arrays-hashing,Top K Frequent Elements,347,Medium
+6,arrays-hashing,Encode and Decode Strings,271,Medium
+7,arrays-hashing,Product of Array Except Self,238,Medium
+8,arrays-hashing,Longest Consecutive Sequence,128,Medium
+9,two-pointers,Valid Palindrome,125,Easy
+10,two-pointers,3Sum,15,Medium
+11,two-pointers,Container With Most Water,11,Medium
+12,sliding-window,Best Time to Buy and Sell Stock,121,Easy
+13,sliding-window,Longest Substring Without Repeating Characters,3,Medium
+14,sliding-window,Longest Repeating Character Replacement,424,Medium
+15,sliding-window,Minimum Window Substring,76,Hard
+16,stack,Valid Parentheses,20,Easy
+17,binary-search,Find Minimum in Rotated Sorted Array,153,Medium
+18,binary-search,Search in Rotated Sorted Array,33,Medium
+19,linked-list,Reverse Linked List,206,Easy
+20,linked-list,Merge Two Sorted Lists,21,Easy
+21,linked-list,Linked List Cycle,141,Easy
+22,linked-list,Reorder List,143,Medium
+23,linked-list,Remove Nth Node From End of List,19,Medium
+24,linked-list,Merge k Sorted Lists,23,Hard
+25,trees,Invert Binary Tree,226,Easy
+26,trees,Maximum Depth of Binary Tree,104,Easy
+27,trees,Same Tree,100,Easy
+28,trees,Subtree of Another Tree,572,Easy
+29,trees,Lowest Common Ancestor of a BST,235,Medium
+30,trees,Binary Tree Level Order Traversal,102,Medium
+31,trees,Validate Binary Search Tree,98,Medium
+32,trees,Kth Smallest Element in a BST,230,Medium
+33,trees,Construct Binary Tree from Preorder and Inorder,105,Medium
+34,trees,Binary Tree Maximum Path Sum,124,Hard
+35,trees,Serialize and Deserialize Binary Tree,297,Hard
+36,heap,Find Median from Data Stream,295,Hard
+37,backtracking,Word Search,79,Medium
+38,tries,Implement Trie (Prefix Tree),208,Medium
+39,tries,Design Add and Search Words Data Structure,211,Medium
+40,tries,Word Search II,212,Hard
+41,graphs,Number of Islands,200,Medium
+42,graphs,Clone Graph,133,Medium
+43,graphs,Pacific Atlantic Water Flow,417,Medium
+44,graphs,Course Schedule,207,Medium
+45,graphs,Graph Valid Tree,261,Medium
+46,graphs,Number of Connected Components in an Undirected Graph,323,Medium
+47,advanced-graphs,Alien Dictionary,269,Hard
+48,dp-1d,Climbing Stairs,70,Easy
+49,dp-1d,House Robber,198,Medium
+50,dp-1d,House Robber II,213,Medium
+51,dp-1d,Longest Palindromic Substring,5,Medium
+52,dp-1d,Palindromic Substrings,647,Medium
+53,dp-1d,Decode Ways,91,Medium
+54,dp-1d,Coin Change,322,Medium
+55,dp-1d,Maximum Product Subarray,152,Medium
+56,dp-1d,Word Break,139,Medium
+57,dp-1d,Combination Sum IV,377,Medium
+58,dp-1d,Longest Increasing Subsequence,300,Medium
+59,dp-2d,Unique Paths,62,Medium
+60,dp-2d,Longest Common Subsequence,1143,Medium
+61,greedy,Maximum Subarray,53,Medium
+62,greedy,Jump Game,55,Medium
+63,intervals,Insert Interval,57,Medium
+64,intervals,Merge Intervals,56,Medium
+65,intervals,Non-overlapping Intervals,435,Medium
+66,intervals,Meeting Rooms,252,Easy
+67,intervals,Meeting Rooms II,253,Medium
+68,math-geometry,Rotate Image,48,Medium
+69,math-geometry,Spiral Matrix,54,Medium
+70,math-geometry,Set Matrix Zeroes,73,Medium
+71,bit-manipulation,Number of 1 Bits,191,Easy
+72,bit-manipulation,Counting Bits,338,Easy
+73,bit-manipulation,Reverse Bits,190,Easy
+74,bit-manipulation,Missing Number,268,Easy
+75,bit-manipulation,Sum of Two Integers,371,Medium
